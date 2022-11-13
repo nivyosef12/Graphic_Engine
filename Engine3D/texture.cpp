@@ -3,6 +3,8 @@
 #include "glad/include/glad/glad.h"
 #include "stb_image.h"
 #include <iostream>
+#include <string>
+#include <map>
 
 Texture::Texture(const std::string& fileName)
 {
@@ -39,9 +41,42 @@ Texture::Texture(int width,int height,unsigned char *data)
 	
 }
 
+Texture::Texture(const std::string& fileName, std::string effect, int halftone_parameter)
+{
+    int width, height, numComponents;
+    unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
+
+    if (data == NULL)
+        std::cerr << "Unable to load texture: " << fileName << std::endl;
+
+    typedef void (Texture::*pfunc)(unsigned char*, int); //pfunc is the name of the type of the effect functions
+
+    std::map<std::string, pfunc> effects;
+    effects["edge_detection"] = edge_detection;
+    effects["halftone"] = halftone;
+    effects["floyd_steinberg"] = floyd_steinberg;
+
+    pfunc func = effects.at(effect);
+    (this->*func)(data, halftone_parameter);
+
+    Texture(width, height, data);
+}
+
 Texture::~Texture()
 {
 	glDeleteTextures(1, &m_texture);
+}
+
+void Texture::edge_detection(unsigned char*, int)
+{
+}
+
+void Texture::halftone(unsigned char*, int)
+{
+}
+
+void Texture::floyd_steinberg(unsigned char*, int)
+{
 }
 
 void Texture::Bind(int slot)
