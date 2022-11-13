@@ -35,7 +35,7 @@ void Game::Init()
 	pickedShape = 0;
 	
 	SetShapeTex(0,0);
-	MoveCamera(0,zTranslate,10);
+	MoveCamera(0,zTranslate,1.5);
 	pickedShape = -1;
 	
 	//ReadPixel(); //uncomment when you are reading from the z-buffer
