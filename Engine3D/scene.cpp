@@ -72,6 +72,11 @@
 		textures.push_back(new Texture(width,height,data));
 	}
 
+	void Scene::AddTexture(const std::string& fileName, std::string effect, int halftone_parameter)
+	{
+		textures.push_back(new Texture(fileName, effect, halftone_parameter));
+	}
+
 	void Scene::AddCamera(glm::vec3& pos , float fov,float relationWH , float zNear, float zFar)
 	{
 		cameras.push_back(new Camera(fov,relationWH,zNear,zFar));
