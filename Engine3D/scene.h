@@ -27,6 +27,8 @@ public:
 	void AddTexture(const std::string& textureFileName, bool for2D);
 	void AddTexture(int width,int height, unsigned char *data);
 
+	void AddTexture(const std::string& fileName, std::string effect, int halftone_parameter);
+
 	void AddCamera(glm::vec3& pos , float fov, float relationWH, float zNear, float zFar);
 
 	void ZeroShapesTrans();
