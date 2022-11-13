@@ -52,9 +52,9 @@ Texture::Texture(const std::string& fileName, std::string effect, int halftone_p
     typedef void (Texture::*pfunc)(unsigned char*, int); //pfunc is the name of the type of the effect functions
 
     std::map<std::string, pfunc> effects;
-    effects["edge_detection"] = edge_detection;
-    effects["halftone"] = halftone;
-    effects["floyd_steinberg"] = floyd_steinberg;
+    effects["edge_detection"] = &Texture::edge_detection;
+    effects["halftone"] = &Texture::halftone;
+    effects["floyd_steinberg"] = &Texture::floyd_steinberg;
 
     pfunc func = effects.at(effect);
     (this->*func)(data, halftone_parameter);
@@ -69,6 +69,8 @@ Texture::~Texture()
 
 void Texture::edge_detection(unsigned char*, int)
 {
+    std::cout << "inside edge_detection function" << std::endl;
+
 }
 
 void Texture::halftone(unsigned char*, int)
