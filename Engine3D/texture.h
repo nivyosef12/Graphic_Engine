@@ -2,6 +2,7 @@
 #define TEXTURE_H
 
 #include <string>
+#include <vector>
 
 class Texture
 {
@@ -17,9 +18,11 @@ private:
 	Texture(const Texture& texture) {}
 	void operator=(const Texture& texture) {}
 	unsigned int m_texture;
-	void edge_detection(const std::string& fileName, unsigned int halftone_parameter);
-	void halftone(const std::string& fileName, unsigned int halftone_parameter);
-	void floyd_steinberg(const std::string& fileName, unsigned int halftone_parameter);
+	void initialization(unsigned char* data, int width, int height);
+	void edge_detection(unsigned char* data, int width, int height, int numComponents);
+	void halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, int numComponents, int width, std::vector<std::vector<unsigned char>> halftone_options);
+	void halftone(unsigned char* data, int width, int height, int numComponents);
+	void floyd_steinberg(unsigned char* data, int width, int height, int numComponents);
 
 };
 
