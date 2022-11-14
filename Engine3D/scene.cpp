@@ -72,7 +72,7 @@
 		textures.push_back(new Texture(width,height,data));
 	}
 
-	void Scene::AddTexture(const std::string& fileName, std::string effect, int halftone_parameter)
+	void Scene::AddTexture(const std::string& fileName, std::string effect, unsigned int halftone_parameter)
 	{
 		textures.push_back(new Texture(fileName, effect, halftone_parameter));
 	}

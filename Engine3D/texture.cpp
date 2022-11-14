@@ -41,25 +41,24 @@ Texture::Texture(int width,int height,unsigned char *data)
 	
 }
 
-Texture::Texture(const std::string& fileName, std::string effect, int halftone_parameter)
+Texture::Texture(const std::string& fileName, std::string effect, unsigned int halftone_parameter)
 {
-    int width, height, numComponents;
-    unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
 
-    if (data == NULL)
-        std::cerr << "Unable to load texture: " << fileName << std::endl;
-
-    typedef void (Texture::*pfunc)(unsigned char*, int); //pfunc is the name of the type of the effect functions
+    typedef void (Texture::*pfunc)(const std::string&, unsigned int); //pfunc is the type of the effect functions
 
     std::map<std::string, pfunc> effects;
     effects["edge_detection"] = &Texture::edge_detection;
     effects["halftone"] = &Texture::halftone;
     effects["floyd_steinberg"] = &Texture::floyd_steinberg;
 
-    pfunc func = effects.at(effect);
-    (this->*func)(data, halftone_parameter);
+    try {
+        pfunc func = effects.at(effect);
+        (this->*func)(fileName, halftone_parameter);
+    }
+    catch (std::out_of_range) {
+        std::cerr << "No such effect: " << effect << std::endl;
+    };
 
-    Texture(width, height, data);
 }
 
 Texture::~Texture()
@@ -67,18 +66,48 @@ Texture::~Texture()
 	glDeleteTextures(1, &m_texture);
 }
 
-void Texture::edge_detection(unsigned char*, int)
+void Texture::edge_detection(const std::string& fileName, unsigned int)
 {
+
+    //niv
+
+    int width, height, numComponents;
+    unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
+
+    if (data == NULL)
+        std::cerr << "Unable to load texture: " << fileName << std::endl;
+
+    Texture(width, height, data);
+    
     std::cout << "inside edge_detection function" << std::endl;
 
+
 }
 
-void Texture::halftone(unsigned char*, int)
+
+
+void Texture::halftone(const std::string& fileName, unsigned int halftone_parameter)
 {
+    int width, height, numComponents;
+    unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
+
+    if (data == NULL)
+        std::cerr << "Unable to load texture: " << fileName << std::endl;
+
+    unsigned char* new_data = new unsigned char[4 * sizeof(data)];
+
+    Texture(width, height, data);
 }
 
-void Texture::floyd_steinberg(unsigned char*, int)
+void Texture::floyd_steinberg(const std::string& fileName, unsigned int)
 {
+    int width, height, numComponents;
+    unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
+
+    if (data == NULL)
+        std::cerr << "Unable to load texture: " << fileName << std::endl;
+
+    Texture(width, height, data);
 }
 
 void Texture::Bind(int slot)
