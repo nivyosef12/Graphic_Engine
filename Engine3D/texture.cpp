@@ -100,6 +100,8 @@ void Texture::edge_detection(const std::string& fileName, unsigned int halftone_
                 exp((-1 * (pow((i + 1) - (k + 1), 2) + pow((j + 1) - (k + 1), 2))) / 2 * pow(sigma, 2)) / 100);
         }
     }
+    
+    // TODO call blur
 
     Texture(width, height, data);
     // TODO free data
@@ -140,7 +142,7 @@ unsigned char* gaussian_blur(unsigned char* data, unsigned char* filtered_data, 
         }
 
         // filtered_data[i] = new pixel
-        filtered_data[data_i] = new_pixel;
+        filtered_data[data_i] = (char)new_pixel;
     }
 
     return filtered_data;
