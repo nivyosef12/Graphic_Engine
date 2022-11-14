@@ -1,6 +1,6 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
-
+#include <vector>
 #include <string>
 
 class Texture
@@ -18,6 +18,7 @@ private:
 	void operator=(const Texture& texture) {}
 	unsigned int m_texture;
 	void edge_detection(const std::string& fileName, unsigned int halftone_parameter);
+	unsigned char* gaussian_blur(unsigned char* data, unsigned char* filtered_data, std::vector<std::vector<int>> gaussian_kernel, int data_size, int image_width, int image_height);
 	void halftone(const std::string& fileName, unsigned int halftone_parameter);
 	void floyd_steinberg(const std::string& fileName, unsigned int halftone_parameter);
 
