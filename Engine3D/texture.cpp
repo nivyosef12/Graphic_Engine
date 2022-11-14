@@ -112,26 +112,31 @@ void Texture::edge_detection(unsigned char* data, int width, int height, int num
     const int k = 2;
     const int kernel_size = (2 * k) + 1;
     const double sigma = 1.0;
-    std::vector<std::vector<int>> gaussian(kernel_size, std::vector<int>(kernel_size, 0)); // TODO lond double??
+    std::vector<std::vector<float>> gaussian(kernel_size, std::vector<float>(kernel_size, 0)); // TODO lond double??
 
     for (int i = 0; i < kernel_size; i++) {
         for (int j = 0; j < kernel_size; j++) {
             // TODO calculate determinet
             gaussian[i][j] = ((1 / 2 * M_PI * pow(sigma, 2)) *
-                exp((-1 * (pow((i + 1) - (k + 1), 2) + pow((j + 1) - (k + 1), 2))) / 2 * pow(sigma, 2)) / 100);
+                exp((-1 * (pow((i + 1) - (k + 1), 2) + pow((j + 1) - (k + 1), 2))) / 2 * pow(sigma, 2)) / 50);
         }
     }
-    
-    // TODO call blur
+    unsigned char* new_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
+    new_data = gaussian_blur(data, new_data, gaussian, 4 * width * height, width, height);
 
-    Texture(width, height, data);
+    for (int i = 0; i < 4 * width * height; i++) {
+        printf("data: %i, new_data: %i\n", data[i], new_data[i]);
+    }
+
+    //Texture(width, height, data);
+    initialization(new_data, width, height);
     // TODO free data
     
     std::cout << "inside edge_detection function" << std::endl;
 }
 
 // TODO change to void
-unsigned char* gaussian_blur(unsigned char* data, unsigned char* filtered_data, std::vector<std::vector<int>> gaussian_kernel, int data_size, int image_width, int image_height)
+unsigned char* Texture::gaussian_blur(unsigned char* data, unsigned char* filtered_data, std::vector<std::vector<float>> gaussian_kernel, int data_size, int image_width, int image_height)
 {
     const int kernel_size = gaussian_kernel.size();
     const int middle = (kernel_size + 1) / 2;
@@ -144,7 +149,7 @@ unsigned char* gaussian_blur(unsigned char* data, unsigned char* filtered_data, 
         int data_color_as_3d_mat = data_i % 4;
 
         // generate matrix (in size of gaussian_kernel) to be multiplied by gaussian_kernel
-        std::vector<std::vector<int>> matrix(kernel_size, std::vector<int>(kernel_size, 0));
+        std::vector<std::vector<float>> matrix(kernel_size, std::vector<float>(kernel_size, 0));
         matrix[middle][middle] = data[data_i];
         for (int matrix_i = 0; matrix_i < kernel_size; matrix_i++) {
             int row = data_row_as_3d_mat - middle + matrix_i;
@@ -156,7 +161,7 @@ unsigned char* gaussian_blur(unsigned char* data, unsigned char* filtered_data, 
         }
 
         // multiply matrix[x][y] with gaussian_kernel[x][y] and sum up to "new pixel"
-        int new_pixel = 0;
+        float new_pixel = 0;
         for (int matrix_i = 0; matrix_i < kernel_size; matrix_i++) {
             for (int matrix_j = 0; matrix_j < kernel_size; matrix_j++) {
                 new_pixel += matrix[matrix_i][matrix_j] * gaussian_kernel[matrix_i][matrix_j];
@@ -164,7 +169,7 @@ unsigned char* gaussian_blur(unsigned char* data, unsigned char* filtered_data, 
         }
 
         // filtered_data[i] = new pixel
-        filtered_data[data_i] = (char)new_pixel;
+        filtered_data[data_i] = (char)((int)new_pixel);
     }
 
     return filtered_data;
@@ -211,6 +216,7 @@ void Texture::floyd_steinberg(unsigned char* data, int width, int height, int nu
     initialization(data, width, height);
 
 }
+
 
 void Texture::Bind(int slot)
 {

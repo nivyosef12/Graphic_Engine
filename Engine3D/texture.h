@@ -23,7 +23,7 @@ private:
 	void halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, int numComponents, int width, std::vector<std::vector<unsigned char>> halftone_options);
 	void halftone(unsigned char* data, int width, int height, int numComponents);
 	void floyd_steinberg(unsigned char* data, int width, int height, int numComponents);
-	unsigned char* gaussian_blur(unsigned char* data, unsigned char* filtered_data, std::vector<std::vector<int>> gaussian_kernel, int data_size, int image_width, int image_height);
+	unsigned char* gaussian_blur(unsigned char* data, unsigned char* filtered_data, std::vector<std::vector<float>> gaussian_kernel, int data_size, int image_width, int image_height);
 
 };
 
