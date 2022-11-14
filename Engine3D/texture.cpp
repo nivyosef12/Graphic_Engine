@@ -117,16 +117,20 @@ void Texture::edge_detection(unsigned char* data, int width, int height, int num
     for (int i = 0; i < kernel_size; i++) {
         for (int j = 0; j < kernel_size; j++) {
             // TODO calculate determinet
-            gaussian[i][j] = ((1 / 2 * M_PI * pow(sigma, 2)) *
-                exp((-1 * (pow((i + 1) - (k + 1), 2) + pow((j + 1) - (k + 1), 2))) / 2 * pow(sigma, 2)) / 50);
+            //gaussian[i][j] = ((1 / 2 * M_PI * pow(sigma, 2)) *
+             //   exp((-1 * (pow((i + 1) - (k + 1), 2) + pow((j + 1) - (k + 1), 2))) / 2 * pow(sigma, 2)));
+            float normal = 1 / (2.0 * M_PI * pow(sigma, 2));
+            gaussian[i][j] = normal * exp(-((pow(i - k, 2) + pow(j - k, 2)) / (2.0 * pow(sigma, 2))));
+            printf("gaus is: %f\n", gaussian[i][j]);
+
         }
     }
     unsigned char* new_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
     new_data = gaussian_blur(data, new_data, gaussian, 4 * width * height, width, height);
 
-    for (int i = 0; i < 4 * width * height; i++) {
+    /* for (int i = 0; i < 4 * width * height; i++) {
         printf("data: %i, new_data: %i\n", data[i], new_data[i]);
-    }
+    }*/
 
     //Texture(width, height, data);
     initialization(new_data, width, height);
@@ -165,6 +169,7 @@ unsigned char* Texture::gaussian_blur(unsigned char* data, unsigned char* filter
         for (int matrix_i = 0; matrix_i < kernel_size; matrix_i++) {
             for (int matrix_j = 0; matrix_j < kernel_size; matrix_j++) {
                 new_pixel += matrix[matrix_i][matrix_j] * gaussian_kernel[matrix_i][matrix_j];
+                // printf("pixel is: %f", gaussian_kernel[matrix_i][matrix_j]);
             }
         }
 
