@@ -68,6 +68,7 @@ Texture::~Texture()
 
 void Texture::edge_detection(const std::string& fileName, unsigned int)
 {
+
     //niv
 
     int width, height, numComponents;
@@ -77,6 +78,10 @@ void Texture::edge_detection(const std::string& fileName, unsigned int)
         std::cerr << "Unable to load texture: " << fileName << std::endl;
 
     Texture(width, height, data);
+    
+    std::cout << "inside edge_detection function" << std::endl;
+
+
 }
 
 

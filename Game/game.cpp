@@ -29,6 +29,7 @@ void Game::Init()
 	AddShader("../res/shaders/basicShader");
 	
 	AddTexture("../res/textures/lena256.jpg",false);
+	// AddTexture("../res/textures/lena256.jpg", "edge_detection", 0);
 
 	AddShape(Plane,-1,TRIANGLES);
 	
