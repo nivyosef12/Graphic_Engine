@@ -28,8 +28,12 @@ void Game::Init()
 	AddShader("../res/shaders/pickingShader");	
 	AddShader("../res/shaders/basicShader");
 	
+<<<<<<< HEAD
+	AddTexture("../res/textures/lena256.jpg","halftone", 4);
+=======
 	AddTexture("../res/textures/lena256.jpg",false);
 	// AddTexture("../res/textures/lena256.jpg", "edge_detection", 0);
+>>>>>>> 372bfca0e24eca9ab0030a25b755c2323256f3fb
 
 	AddShape(Plane,-1,TRIANGLES);
 	
