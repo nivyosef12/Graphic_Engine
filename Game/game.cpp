@@ -60,9 +60,13 @@ unsigned char* Game::edge_detection(int width, int height, unsigned char* data)
 {
 	unsigned char* smoothed_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
 	unsigned char* derived_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
+	float* pixel_theta = new float[4 * width * height]; //TODO: memory leaks!!
+	unsigned char* non_max_suppression_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
+
 
 	smoothing(data, smoothed_data, width, height);
-	derivative(smoothed_data, derived_data, width, height);
+	derivative(smoothed_data, derived_data, pixel_theta, width, height);
+	// non_max_suppression(derived_data, non_max_suppression_data, pixel_theta, width, height);
 	
 
 	// TODO free data
@@ -90,7 +94,7 @@ void Game::smoothing(unsigned char* data, unsigned char* new_data, int image_wid
 	convolution(data, new_data, gaussian, data_size, image_width, image_height);  // smoothing with gaussian filter
 }
 
-void Game::derivative(unsigned char* data, unsigned char* new_data, int image_width, int image_height) {
+void Game::derivative(unsigned char* data, unsigned char* new_data, float* pixel_theta, int image_width, int image_height) {
 
 	const int data_size = 4 * image_height * image_width;
 	unsigned char* new_data_gx = new unsigned char[data_size]; //TODO: memory leaks!!
@@ -124,7 +128,10 @@ void Game::derivative(unsigned char* data, unsigned char* new_data, int image_wi
 
 	for (int i = 0; i < data_size; i++) {
 		new_data[i] = sqrt((pow(new_data_gx[i], 2) + pow(new_data_gy[i], 2)));
-
+		if (new_data_gx[i] == 0)
+			pixel_theta[i] = M_PI / 2;
+		else
+			pixel_theta[i] = atan(new_data_gy[i] / new_data_gx[i]);
 	}
 	// TODO free gx, gy
 }
@@ -168,7 +175,114 @@ void Game::convolution(unsigned char* data, unsigned char* new_data, std::vector
 	}
 }
 
-void non_max_suppression(int width, int height, unsigned char* data, unsigned char* new_data) {
+void Game::non_max_suppression(unsigned char* data, unsigned char* new_data, float* pixel_theta, int image_width, int image_height){
+	const int data_size = 4 * image_height * image_width;
+	int neighbor_x;
+	int neighbor_y;
+	int neighbor_pixel;
+	int index_of_neighbor_in_1d_array;
+	for (int i = 0; i < data_size; i++) {
+
+		// 4 is (R, G ,B, alpha)
+		int data_row_as_3d_mat = i / (4 * image_width);
+		int data_column_as_3d_mat = (i % (4 * image_width)) / 4;
+		int data_color_as_3d_mat = i % 4;
+
+		float curr_theta = pixel_theta[i];
+
+		if (curr_theta <= 3 * M_PI / 8 && curr_theta >= M_PI / 8) {
+			// right up
+			neighbor_x = data_row_as_3d_mat - 1;
+			neighbor_y = data_column_as_3d_mat + 1;
+			neighbor_pixel = data_color_as_3d_mat;
+			index_of_neighbor_in_1d_array = neighbor_x * image_width * 4 + neighbor_y * 4 + neighbor_pixel;
+			if (neighbor_x >= 0 && neighbor_y <= image_height && data[i] < data[index_of_neighbor_in_1d_array]) {
+				new_data[i] = 0;
+				continue;
+			}
+
+			// left down
+			neighbor_x = data_row_as_3d_mat + 1;
+			neighbor_y = data_column_as_3d_mat - 1;
+			neighbor_pixel = data_color_as_3d_mat;
+			index_of_neighbor_in_1d_array = neighbor_x * image_width * 4 + neighbor_y * 4 + neighbor_pixel;
+			if (neighbor_x < image_height && neighbor_y >= 0 && data[i] < data[index_of_neighbor_in_1d_array]) {
+				new_data[i] = 0;
+				continue;
+			}
+
+		}
+		else if (curr_theta <= M_PI / 8 && curr_theta >=  -M_PI / 8) {
+			// left neighbor
+			neighbor_x = data_row_as_3d_mat;
+			neighbor_y = data_column_as_3d_mat - 1;
+			neighbor_pixel = data_color_as_3d_mat;
+			index_of_neighbor_in_1d_array = neighbor_x * image_width * 4 + neighbor_y * 4 + neighbor_pixel;
+			if (neighbor_y >= 0 && data[i] < data[index_of_neighbor_in_1d_array]) {
+				new_data[i] = 0;
+				continue;
+			}
+
+			// right neighbor
+			neighbor_x = data_row_as_3d_mat;
+			neighbor_y = data_column_as_3d_mat + 1;
+			neighbor_pixel = data_color_as_3d_mat;
+			index_of_neighbor_in_1d_array = neighbor_x * image_width * 4 + neighbor_y * 4 + neighbor_pixel;
+			if (neighbor_y < image_width && data[i] < data[index_of_neighbor_in_1d_array]) {
+				new_data[i] = 0;
+				continue;
+			}
+
+		}
+		else if (curr_theta <= -M_PI / 8 && curr_theta >= -3 * M_PI / 8) {
+			// left up
+			neighbor_x = data_row_as_3d_mat - 1;
+			neighbor_y = data_column_as_3d_mat - 1;
+			neighbor_pixel = data_color_as_3d_mat;
+			index_of_neighbor_in_1d_array = neighbor_x * image_width * 4 + neighbor_y * 4 + neighbor_pixel;
+			if (neighbor_y >= 0 && neighbor_x >= 0 && data[i] < data[index_of_neighbor_in_1d_array]) {
+				new_data[i] = 0;
+				continue;
+			}
+
+			// right down
+			neighbor_x = data_row_as_3d_mat + 1;
+			neighbor_y = data_column_as_3d_mat + 1;
+			neighbor_pixel = data_color_as_3d_mat;
+			index_of_neighbor_in_1d_array = neighbor_x * image_width * 4 + neighbor_y * 4 + neighbor_pixel;
+			if (neighbor_y < image_width && neighbor_x < image_height && data[i] < data[index_of_neighbor_in_1d_array]) {
+				new_data[i] = 0;
+				continue;
+			}
+
+		}
+		else {
+
+			// up neighbor
+			neighbor_x = data_row_as_3d_mat - 1;
+			neighbor_y = data_column_as_3d_mat;
+			neighbor_pixel = data_color_as_3d_mat;
+			index_of_neighbor_in_1d_array = neighbor_x * image_width * 4 + neighbor_y * 4 + neighbor_pixel;
+			if (neighbor_x >= 0 && data[i] < data[index_of_neighbor_in_1d_array]) {
+				new_data[i] = 0;
+				continue;
+			}
+
+			// down neighbor
+			neighbor_x = data_row_as_3d_mat + 1;
+			neighbor_y = data_column_as_3d_mat;
+			neighbor_pixel = data_color_as_3d_mat;
+			index_of_neighbor_in_1d_array = neighbor_x * image_width * 4 + neighbor_y * 4 + neighbor_pixel;
+			if (neighbor_x < image_height && data[i] < data[index_of_neighbor_in_1d_array]) {
+				new_data[i] = 0;
+				continue;
+			}
+		}
+
+		// preserve value
+		new_data[i] = data[i];
+
+	}
 }
 
 
