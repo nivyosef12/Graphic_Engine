@@ -116,15 +116,16 @@ void Texture::edge_detection(unsigned char* data, int width, int height, int num
 
     for (int i = 0; i < kernel_size; i++) {
         for (int j = 0; j < kernel_size; j++) {
+
             // TODO calculate determinet
-            //gaussian[i][j] = ((1 / 2 * M_PI * pow(sigma, 2)) *
-             //   exp((-1 * (pow((i + 1) - (k + 1), 2) + pow((j + 1) - (k + 1), 2))) / 2 * pow(sigma, 2)));
-            float normal = 1 / (2.0 * M_PI * pow(sigma, 2));
-            gaussian[i][j] = normal * exp(-((pow(i - k, 2) + pow(j - k, 2)) / (2.0 * pow(sigma, 2))));
-            printf("gaus is: %f\n", gaussian[i][j]);
+            // float normal = 1 / (2.0 * M_PI * pow(sigma, 2));
+            // gaussian[i][j] = normal * exp(-((pow(i - k, 2) + pow(j - k, 2)) / (2.0 * pow(sigma, 2))));
+            // printf("gaus is: %f\n", gaussian[i][j]);
+
 
         }
     }
+    gaussian[2][2] = 1;
     unsigned char* new_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
     new_data = gaussian_blur(data, new_data, gaussian, 4 * width * height, width, height);
 
@@ -164,6 +165,15 @@ unsigned char* Texture::gaussian_blur(unsigned char* data, unsigned char* filter
             }
         }
 
+        printf("matrix\n");
+        for (int matrix_i = 0; matrix_i < kernel_size; matrix_i++) {
+            for (int matrix_j = 0; matrix_j < kernel_size; matrix_j++) {
+                printf("%i, ", matrix[matrix_i][matrix_j]);
+
+            }
+            printf("\n");
+        }
+
         // multiply matrix[x][y] with gaussian_kernel[x][y] and sum up to "new pixel"
         float new_pixel = 0;
         for (int matrix_i = 0; matrix_i < kernel_size; matrix_i++) {
@@ -172,7 +182,7 @@ unsigned char* Texture::gaussian_blur(unsigned char* data, unsigned char* filter
                 // printf("pixel is: %f", gaussian_kernel[matrix_i][matrix_j]);
             }
         }
-
+        // printf("data: %i, new_data: %i\n", data[data_i], (int)new_pixel);
         // filtered_data[i] = new pixel
         filtered_data[data_i] = (char)((int)new_pixel);
     }
