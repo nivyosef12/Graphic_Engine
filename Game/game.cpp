@@ -37,6 +37,9 @@ void Game::Init()
 	//AddTexture();
 
 	stbi_image_free(data);
+	// AddTexture("../res/textures/lena256.jpg","edge_detection", 4);
+	// AddTexture("../res/textures/lena256.jpg",false);
+	// AddTexture("../res/textures/lena256.jpg", "edge_detection", 0);
 
 	AddShape(Plane,-1,TRIANGLES);
 	
