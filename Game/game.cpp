@@ -58,11 +58,25 @@ void Game::Init()
 
 unsigned char* Game::edge_detection(int width, int height, unsigned char* data)
 {
+	unsigned char* smoothed_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
+	unsigned char* derived_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
+
+	smoothing(data, smoothed_data, width, height);
+	derivative(smoothed_data, derived_data, width, height);
+	
+
+	// TODO free data
+	return derived_data;
+}
+
+void Game::smoothing(unsigned char* data, unsigned char* new_data, int image_width, int image_height) {
+
 	// generate Gaussian filter kernel of size (2k +1)X(2k + 1)
+	const int data_size = 4 * image_height * image_width;
 	const int k = 2;
 	const int kernel_size = (2 * k) + 1;
 	const double sigma = 0.97;
-	std::vector<std::vector<float>> gaussian(kernel_size, std::vector<float>(kernel_size, 0)); // TODO lond double??
+	std::vector<std::vector<float>> gaussian(kernel_size, std::vector<float>(kernel_size, 0));
 
 	for (int i = 0; i < kernel_size; i++) {
 		for (int j = 0; j < kernel_size; j++) {
@@ -71,13 +85,16 @@ unsigned char* Game::edge_detection(int width, int height, unsigned char* data)
 			gaussian[i][j] = normal * exp(-((pow(i - k, 2) + pow(j - k, 2)) / (2.0 * pow(sigma, 2))));
 
 		}
-		printf("\n");
 	}
-	
 
-	unsigned char* new_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
-	unsigned char* new_data_gx = new unsigned char[4 * width * height]; //TODO: memory leaks!!
-	unsigned char* new_data_gy = new unsigned char[4 * width * height]; //TODO: memory leaks!!
+	convolution(data, new_data, gaussian, data_size, image_width, image_height);  // smoothing with gaussian filter
+}
+
+void Game::derivative(unsigned char* data, unsigned char* new_data, int image_width, int image_height) {
+
+	const int data_size = 4 * image_height * image_width;
+	unsigned char* new_data_gx = new unsigned char[data_size]; //TODO: memory leaks!!
+	unsigned char* new_data_gy = new unsigned char[data_size]; //TODO: memory leaks!!
 
 	/*std::vector<std::vector<float>> Gx{
 	{-1, 0, 1},
@@ -100,21 +117,20 @@ unsigned char* Game::edge_detection(int width, int height, unsigned char* data)
 	{0, 0, 0},
 	{0, param, 0},
 	{0, -param, 0}
-	}; 
+	};
 
-	new_data = convolution(data, new_data, gaussian, 4 * width * height, width, height);
-	new_data_gx = convolution(new_data, new_data_gx, Gx, 4 * width * height, width, height);
-	new_data_gy = convolution(new_data, new_data_gy, Gy, 4 * width * height, width, height);
+	convolution(data, new_data_gx, Gx, data_size, image_width, image_height);
+	convolution(data, new_data_gy, Gy, data_size, image_width, image_height);
 
-	for (int i = 0; i < 4 * width * height; i++) {
+	for (int i = 0; i < data_size; i++) {
 		new_data[i] = sqrt((pow(new_data_gx[i], 2) + pow(new_data_gy[i], 2)));
 
 	}
-	// TODO free data
-	return new_data;
+	// TODO free gx, gy
 }
 
-unsigned char* Game::convolution(unsigned char* data, unsigned char* filtered_data, std::vector<std::vector<float>> gaussian_kernel, int data_size, int image_width, int image_height)
+
+void Game::convolution(unsigned char* data, unsigned char* new_data, std::vector<std::vector<float>> gaussian_kernel, int data_size, int image_width, int image_height)
 {
 	const int kernel_size = gaussian_kernel.size();
 	const int middle = (kernel_size - 1) / 2;
@@ -148,10 +164,11 @@ unsigned char* Game::convolution(unsigned char* data, unsigned char* filtered_da
 		}
 
 		// update
-		filtered_data[data_i] = (char)(abs((int)new_pixel));
+		new_data[data_i] = (char)(abs((int)new_pixel));
 	}
+}
 
-	return filtered_data;
+void non_max_suppression(int width, int height, unsigned char* data, unsigned char* new_data) {
 }
 
 

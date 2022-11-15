@@ -18,7 +18,11 @@ public:
 private:
 
 	unsigned char* edge_detection(int width, int height, unsigned char* data);
-	unsigned char* convolution(unsigned char* data, unsigned char* filtered_data, std::vector<std::vector<float>> gaussian_kernel, int data_size, int image_width, int image_height);
+	void convolution(unsigned char* data, unsigned char* new_data, std::vector<std::vector<float>> kernel, int data_size, int image_width, int image_height);
+	void smoothing(unsigned char* data, unsigned char* new_data, int image_width, int image_height);
+	void derivative(unsigned char* data, unsigned char* new_data, int image_width, int image_height);
+
+	void non_max_suppression(int width, int height, unsigned char* data, unsigned char* new_data);
 
 	void halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, int width, std::vector<std::vector<unsigned char>> halftone_options);
 	void halftone(int* width, int* height, unsigned char* data);
