@@ -34,7 +34,7 @@ void Game::Init()
 	unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
 	
 	AddTexture("../res/textures/lena256.jpg",false);
-	// AddTexture("../res/textures/lena256.jpg", "edge_detection", 0);
+	//AddTexture();
 
 	stbi_image_free(data);
 
