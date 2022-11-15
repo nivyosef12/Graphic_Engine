@@ -16,9 +16,10 @@ public:
 	~Game(void);
 private:
 	void edge_detection(int width, int height, unsigned char* data);
-	void halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, int width, std::vector<std::vector<unsigned char>> halftone_options);
-	void halftone(int* width, int* height, unsigned char* data);
+	void halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, int width, std::vector<std::vector<unsigned char>> halftone_patterns);
+	void halftone(unsigned char* data, unsigned char* new_data, int width, int height);
 	void floyd_steinberg(int width, int height, unsigned char* data);
+	void print_matrix(unsigned char* data, int width, int height);
 
 };
 

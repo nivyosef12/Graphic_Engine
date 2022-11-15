@@ -1,6 +1,7 @@
 // ???
 #include "game.h"
 #include <iostream>
+#include <fstream>
 #include <glm/gtc/matrix_transform.hpp>
 #include "stb_image.h"
 
@@ -33,8 +34,21 @@ void Game::Init()
 	int width, height, numComponents;
 	unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
 	
-	AddTexture("../res/textures/lena256.jpg",false);
-	//AddTexture();
+	
+	int width2 = width * 2;
+	int height2 = height * 2;
+	unsigned char* halftone_data = new unsigned char[width2 * height2 * 4];
+
+	for (int i = 0; i < width2 * height2 * 4; i++) {
+		halftone_data[i] = 0;
+	}
+
+	halftone(data, halftone_data, width2, height2);
+	print_matrix(halftone_data, width2, height2);
+
+
+	//AddTexture("../res/textures/lena256.jpg",false);
+	AddTexture(width2, height2, halftone_data);
 
 	stbi_image_free(data);
 
@@ -51,50 +65,87 @@ void Game::Init()
 
 void Game::edge_detection(int width, int height, unsigned char* data)
 {
-
 }
 
-void Game::halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, int width, std::vector<std::vector<unsigned char>> halftone_options)
+void Game::halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, int width, std::vector<std::vector<unsigned char>> halftone_patterns)
 {
-	for (int i = 0; i < 4; i++) {
-		int data_inti = (int)data[pixel_num + i];
-		int option = (((int)data[pixel_num + i]) / 4) / (256 / 4); // this is the index of the halftone option for the ith color of this pixel (e.g. if the value is under 64 the option will be 0)
-		std::vector<unsigned char> halftone_option = halftone_options[option];
-		new_data[2 * pixel_num] = halftone_option[0];
-		new_data[2 * (pixel_num + 4)] = halftone_option[1];
-		new_data[2 * pixel_num + 4 * width] = halftone_option[2];
-		new_data[2 * (pixel_num + 4) + 4 * width] = halftone_option[3];
+	int row_num_in_data = pixel_num / (4 * width / 2);
+	int column_num_in_data = (pixel_num % (4 * width / 2)) / 4;
+
+	int row_num_in_new_data = 2 * row_num_in_data;
+	int column_num_in_new_data = 2 * column_num_in_data;
+	
+	for (int color = 0; color < 4; color++) {
+
+		int halftone_pattern_index = ((float)data[pixel_num + color]/256) * 5; // this is the index of the halftone option for the ith color of this pixel (e.g. if the value is under 64 the option will be 0)
+		/*if(halftone_pattern_index == 4)
+			std::cout << halftone_pattern_index << std::endl;*/
+
+		std::vector<unsigned char> halftone_pattern = halftone_patterns[halftone_pattern_index];
+
+		new_data[4 * width * row_num_in_new_data + 4 * column_num_in_new_data + color] = halftone_pattern[0];
+		//new_data[2 * row_num_in_data + 2 * column_num_in_data] = halftone_pattern[0];
+		//std::cout << (int)new_data[2 * row_num_in_data + 2 * column_num_in_data] << " ";
+		
+		new_data[4 * width * row_num_in_new_data + 4 * column_num_in_new_data + color + 4] = halftone_pattern[1];
+		//new_data[2 * row_num_in_data + 2 * column_num_in_data + 4] = halftone_pattern[1];
+		//std::cout << (int)new_data[2 * row_num_in_data + 2 * column_num_in_data] << std::endl;
+
+		new_data[4 * width * (row_num_in_new_data + 1) + 4 * column_num_in_new_data + color] = halftone_pattern[2];
+		//new_data[2 * row_num_in_data + 2 * column_num_in_data + 4 * width] = halftone_pattern[2];
+		//std::cout << (int)new_data[2 * row_num_in_data + 2 * column_num_in_data + 4 * width] << " ";
+		
+		new_data[4 * width * (row_num_in_new_data + 1) + 4 * column_num_in_new_data + color + 4] = halftone_pattern[3];
+		//new_data[2 * row_num_in_data + 2 * column_num_in_data + 4 * width + 4] = halftone_pattern[3];
+		//std::cout << (int)new_data[2 * row_num_in_data + 2 * column_num_in_data + 4 * width + 4] << "\n";
 	}
 }
 
-void Game::halftone(int* width, int* height, unsigned char* data)
+void Game::halftone(unsigned char* data, unsigned char* new_data, int width, int height)
 {
-	unsigned char* new_data = new unsigned char[*width * *height * 4]; //TODO: memory leaks!!
+	
+	/*std::cout << "width = " << *width << std::endl;
+	*width *= 4;
+	std::cout << "width = " << *width << std::endl;
+	*height *= 4;*/
 
-	std::vector<std::vector<unsigned char>> halftone_options
+	std::vector<std::vector<unsigned char>> halftone_patterns
 	{
-		{(unsigned char)0, (unsigned char)0, (unsigned char)0, (unsigned char)0},
-		{(unsigned char)0, (unsigned char)0, (unsigned char)255, (unsigned char)0},
-		{(unsigned char)0, (unsigned char)255, (unsigned char)255, (unsigned char)0},
-		{(unsigned char)0, (unsigned char)255, (unsigned char)255, (unsigned char)255},
-		{(unsigned char)255, (unsigned char)255, (unsigned char)255, (unsigned char)255},
+		{0, 0, 0, 0},
+		{0, 0, 255, 0},
+		{0, 255, 255, 0},
+		{0, 255, 255, 255},
+		{255, 255, 255, 255},
 	};
 
-	for (int i = 0; i < *width * *height * 4; i++) {
-		halftone_pixel(data, new_data, i, *width, halftone_options);
+	
+	for (int i = 0; i < width/2 * height/2 * 4; i+=4) {
+		halftone_pixel(data, new_data, i, width, halftone_patterns);
+		/*if (i > 1)
+			break;*/
 	}
-
-	std::cout << "got here" << std::endl;
-
-	/*for (int i = 0; i < vec.size(); i++) {
-		std::cout << vec[i] << std::endl;
+	/*for (int i = 0; i < height * width * 4; i++) {
+		std::cout << (int)new_data[i] << " ";
 	}*/
-
 }
 
 void Game::floyd_steinberg(int width, int height, unsigned char* data)
 {
+}
 
+void Game::print_matrix(unsigned char* data, int width, int height)
+{
+	std::ofstream matrix_file;
+	matrix_file.open("matrix_file.txt");
+
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width * 4; j+=4) {
+			matrix_file << (int)data[i * width * 4 + j] << " " << (int)data[i * width * 4 + j + 1] << " " << (int)data[i * width * 4 + j + 2] << " " << (int)data[i * width * 4 + j + 3] << "   ";
+		}
+		matrix_file << "\n\n";
+	}
+
+	matrix_file.close();
 }
 
 void Game::Update(const glm::mat4 &MVP,const glm::mat4 &Model,const int  shaderIndx)
