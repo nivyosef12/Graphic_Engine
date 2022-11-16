@@ -4,6 +4,8 @@
 #include <fstream>
 #include <glm/gtc/matrix_transform.hpp>
 #include "stb_image.h"
+#include <map>
+#include <chrono> //TODO: delete
 
 static void printMat(const glm::mat4 mat)
 {
@@ -35,26 +37,26 @@ void Game::Init()
 	unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
 	
 	
-	int width2 = width * 2;
+	/*int width2 = width * 2;
 	int height2 = height * 2;
 	unsigned char* halftone_data = new unsigned char[width2 * height2 * 4];
-
-	for (int i = 0; i < width2 * height2 * 4; i++) {
-		halftone_data[i] = 0;
-	}
 
 	halftone(data, halftone_data, width2, height2);
 	print_matrix(halftone_data, width2, height2);
 
+	AddTexture(width2, height2, halftone_data);*/
 
-	//AddTexture("../res/textures/lena256.jpg",false);
-	AddTexture(width2, height2, halftone_data);
+	//delete(halftone_data);
 
-	stbi_image_free(data);
-	// AddTexture("../res/textures/lena256.jpg","edge_detection", 4);
-	// AddTexture("../res/textures/lena256.jpg",false);
-	// AddTexture("../res/textures/lena256.jpg", "edge_detection", 0);
+	unsigned char* floyd_steinberg_data = new unsigned char[width * height * 4];
 
+	floyd_steinberg(data, floyd_steinberg_data, width, height);
+	print_matrix(floyd_steinberg_data, width, height);
+
+	AddTexture(width, height, floyd_steinberg_data);
+
+	delete[] floyd_steinberg_data;
+	
 	AddShape(Plane,-1,TRIANGLES);
 	
 	pickedShape = 0;
@@ -63,6 +65,8 @@ void Game::Init()
 	MoveCamera(0,zTranslate,1.5);
 	pickedShape = -1;
 	
+	stbi_image_free(data);
+
 	//ReadPixel(); //uncomment when you are reading from the z-buffer
 }
 
@@ -81,36 +85,19 @@ void Game::halftone_pixel(unsigned char* data, unsigned char* new_data, int pixe
 	for (int color = 0; color < 4; color++) {
 
 		int halftone_pattern_index = ((float)data[pixel_num + color]/256) * 5; // this is the index of the halftone option for the ith color of this pixel (e.g. if the value is under 64 the option will be 0)
-		/*if(halftone_pattern_index == 4)
-			std::cout << halftone_pattern_index << std::endl;*/
 
 		std::vector<unsigned char> halftone_pattern = halftone_patterns[halftone_pattern_index];
 
-		new_data[4 * width * row_num_in_new_data + 4 * column_num_in_new_data + color] = halftone_pattern[0];
-		//new_data[2 * row_num_in_data + 2 * column_num_in_data] = halftone_pattern[0];
-		//std::cout << (int)new_data[2 * row_num_in_data + 2 * column_num_in_data] << " ";
-		
+		new_data[4 * width * row_num_in_new_data + 4 * column_num_in_new_data + color] = halftone_pattern[0];		
 		new_data[4 * width * row_num_in_new_data + 4 * column_num_in_new_data + color + 4] = halftone_pattern[1];
-		//new_data[2 * row_num_in_data + 2 * column_num_in_data + 4] = halftone_pattern[1];
-		//std::cout << (int)new_data[2 * row_num_in_data + 2 * column_num_in_data] << std::endl;
-
 		new_data[4 * width * (row_num_in_new_data + 1) + 4 * column_num_in_new_data + color] = halftone_pattern[2];
-		//new_data[2 * row_num_in_data + 2 * column_num_in_data + 4 * width] = halftone_pattern[2];
-		//std::cout << (int)new_data[2 * row_num_in_data + 2 * column_num_in_data + 4 * width] << " ";
-		
 		new_data[4 * width * (row_num_in_new_data + 1) + 4 * column_num_in_new_data + color + 4] = halftone_pattern[3];
-		//new_data[2 * row_num_in_data + 2 * column_num_in_data + 4 * width + 4] = halftone_pattern[3];
-		//std::cout << (int)new_data[2 * row_num_in_data + 2 * column_num_in_data + 4 * width + 4] << "\n";
+
 	}
 }
 
 void Game::halftone(unsigned char* data, unsigned char* new_data, int width, int height)
 {
-	
-	/*std::cout << "width = " << *width << std::endl;
-	*width *= 4;
-	std::cout << "width = " << *width << std::endl;
-	*height *= 4;*/
 
 	std::vector<std::vector<unsigned char>> halftone_patterns
 	{
@@ -120,20 +107,64 @@ void Game::halftone(unsigned char* data, unsigned char* new_data, int width, int
 		{0, 255, 255, 255},
 		{255, 255, 255, 255},
 	};
-
 	
 	for (int i = 0; i < width/2 * height/2 * 4; i+=4) {
 		halftone_pixel(data, new_data, i, width, halftone_patterns);
-		/*if (i > 1)
-			break;*/
 	}
-	/*for (int i = 0; i < height * width * 4; i++) {
-		std::cout << (int)new_data[i] << " ";
-	}*/
+	
 }
 
-void Game::floyd_steinberg(int width, int height, unsigned char* data)
+void Game::floyd_steinberg_pixel(std::vector<std::vector<float>>& new_data_float_values, int row_num, int column_num, int width, int height, std::vector<float> colors)
 {
+	float original_color = new_data_float_values[row_num][column_num];
+	//printf("original color = %f\n", original_color);
+	float new_color = colors[(int)(original_color / 16)];
+	//printf("new color = %f\n", new_color);
+	float diff = original_color - new_color;
+
+	new_data_float_values[row_num][column_num] = new_color;
+	
+	if (column_num + 4 < width * 4)
+		new_data_float_values[row_num][column_num + 4] += diff * 7 / 16;
+	
+	if (row_num + 1 < height) {
+		if (column_num - 4 >= 0)
+			new_data_float_values[row_num + 1][column_num - 4] += diff * 3 / 16;
+
+		new_data_float_values[row_num + 1][column_num] += diff * 5 / 16;
+
+		if (column_num + 4 < width * 4)
+			new_data_float_values[row_num + 1][column_num + 4] += diff * 1 / 16;
+	}
+	
+}
+
+void Game::floyd_steinberg(unsigned char* data, unsigned char* new_data, int width, int height)
+{
+	int data_size = width * height * 4;
+
+	std::vector<std::vector<float>> new_data_float_values(height, std::vector<float>(width * 4)); //a matrix representing the float values of new_data
+	std::vector<std::vector<float>>& new_data_float_values_ref = new_data_float_values; //reference of the vector to pass into floyd_steinberg_pixel
+
+	std::vector<float> colors(16);
+	for (int i = 0; i < 16; i++) {
+		colors[i] = ((float)i) * 256 / 16; //the 16 color options
+	}
+	
+	auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	for (int i = 0; i < data_size; i++) {
+		int row_num = i / (4 * width);
+		int column_num = (i % (4 * width)) / 4;
+		int color = i % 4;
+
+		new_data_float_values[row_num][column_num + color] = (float)((int)data[i]); //give the pixel it's original color
+		floyd_steinberg_pixel(new_data_float_values_ref, row_num, column_num + color, width, height, colors); //give the pixel it's new color and propagate the error
+		new_data[i] = (unsigned char)((int)new_data_float_values[row_num][column_num + color]); //convert the pixel's new color to unsigned char and enter it in new_data
+
+	}
+	auto finish = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+	std::cout << "loop duration in milliseconds: " << finish - start << std::endl;
+
 }
 
 void Game::print_matrix(unsigned char* data, int width, int height)
