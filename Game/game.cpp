@@ -5,7 +5,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "stb_image.h"
 #include <map>
-#include <chrono> //TODO: delete
 
 static void printMat(const glm::mat4 mat)
 {
@@ -28,40 +27,53 @@ Game::Game(float angle ,float relationWH, float near1, float far1) : Scene(angle
 
 void Game::Init()
 {		
-
 	AddShader("../res/shaders/pickingShader");	
 	AddShader("../res/shaders/basicShader");
 
+	AddShape(Plane, -1, TRIANGLES);
+
+	//add grayscale texture
 	std::string fileName = "../res/textures/lena256.jpg";
 	int width, height, numComponents;
 	unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
+	AddTexture(fileName, false);
+	//set grayscale shape
+	/*AddShape(Plane, -1, TRIANGLES);
+	pickedShape = 0;
+	SetShapeTex(0, 0);*/
+
+	//add texture for edge detection
+	unsigned char* edge_detection_data = new unsigned char[width * height * 4];
+	edge_detection(data, edge_detection_data, width, height);
+	AddTexture(width, height, edge_detection_data);
+	delete[] edge_detection_data;
+	//set edge detection shape
+	/*AddShape(Plane, -1, TRIANGLES);
+	pickedShape = 1;
+	SetShapeTex(1, 1);*/
 	
-	
-	/*int width2 = width * 2;
+	//add texture for halftone
+	int width2 = width * 2;
 	int height2 = height * 2;
 	unsigned char* halftone_data = new unsigned char[width2 * height2 * 4];
-
 	halftone(data, halftone_data, width2, height2);
-	print_matrix(halftone_data, width2, height2);
+	AddTexture(width2, height2, halftone_data);
+	delete[] halftone_data;
+	//set halftone shape
+	/*AddShape(Plane, -1, TRIANGLES);
+	pickedShape = 2;
+	SetShapeTex(2, 2);*/
 
-	AddTexture(width2, height2, halftone_data);*/
-
-	//delete(halftone_data);
-
+	//add texture for floyd-steinberg
 	unsigned char* floyd_steinberg_data = new unsigned char[width * height * 4];
-
 	floyd_steinberg(data, floyd_steinberg_data, width, height);
-	print_matrix(floyd_steinberg_data, width, height);
-
 	AddTexture(width, height, floyd_steinberg_data);
-
 	delete[] floyd_steinberg_data;
+	//set floyd-steinberg shape
+	/*AddShape(Plane, -1, TRIANGLES);
+	pickedShape = 3;
+	SetShapeTex(3, 3);*/
 	
-	AddShape(Plane,-1,TRIANGLES);
-	
-	pickedShape = 0;
-	
-	SetShapeTex(0,0);
 	MoveCamera(0,zTranslate,1.5);
 	pickedShape = -1;
 	
@@ -70,11 +82,13 @@ void Game::Init()
 	//ReadPixel(); //uncomment when you are reading from the z-buffer
 }
 
-void Game::edge_detection(int width, int height, unsigned char* data)
+void Game::edge_detection(unsigned char* data, unsigned char* new_data, int width, int height)
 {
+	for (int i = 0; i < width * height * 4; i++)
+		new_data[i] = data[i];
 }
 
-void Game::halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, int width, std::vector<std::vector<unsigned char>> halftone_patterns)
+void Game::halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, int width, std::vector<std::vector<unsigned char>>& halftone_patterns)
 {
 	int row_num_in_data = pixel_num / (4 * width / 2);
 	int column_num_in_data = (pixel_num % (4 * width / 2)) / 4;
@@ -114,12 +128,10 @@ void Game::halftone(unsigned char* data, unsigned char* new_data, int width, int
 	
 }
 
-void Game::floyd_steinberg_pixel(std::vector<std::vector<float>>& new_data_float_values, int row_num, int column_num, int width, int height, std::vector<float> colors)
+void Game::floyd_steinberg_pixel(std::vector<std::vector<float>>& new_data_float_values, int row_num, int column_num, int width, int height, std::vector<float>& colors)
 {
 	float original_color = new_data_float_values[row_num][column_num];
-	//printf("original color = %f\n", original_color);
 	float new_color = colors[(int)(original_color / 16)];
-	//printf("new color = %f\n", new_color);
 	float diff = original_color - new_color;
 
 	new_data_float_values[row_num][column_num] = new_color;
@@ -151,7 +163,6 @@ void Game::floyd_steinberg(unsigned char* data, unsigned char* new_data, int wid
 		colors[i] = ((float)i) * 256 / 16; //the 16 color options
 	}
 	
-	auto start = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	for (int i = 0; i < data_size; i++) {
 		int row_num = i / (4 * width);
 		int column_num = (i % (4 * width)) / 4;
@@ -162,9 +173,6 @@ void Game::floyd_steinberg(unsigned char* data, unsigned char* new_data, int wid
 		new_data[i] = (unsigned char)((int)new_data_float_values[row_num][column_num + color]); //convert the pixel's new color to unsigned char and enter it in new_data
 
 	}
-	auto finish = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-	std::cout << "loop duration in milliseconds: " << finish - start << std::endl;
-
 }
 
 void Game::print_matrix(unsigned char* data, int width, int height)

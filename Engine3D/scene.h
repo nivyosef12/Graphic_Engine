@@ -27,8 +27,6 @@ public:
 	void AddTexture(const std::string& textureFileName, bool for2D);
 	void AddTexture(int width,int height, unsigned char *data);
 
-	void AddTexture(const std::string& fileName, std::string effect, unsigned int halftone_parameter);
-
 	void AddCamera(glm::vec3& pos , float fov, float relationWH, float zNear, float zFar);
 
 	void ZeroShapesTrans();
@@ -37,7 +35,7 @@ public:
 	virtual void WhenTranslate(){};
 	virtual void WhenRotate(){};
 	virtual void Motion(){};
-	virtual void Draw(int shaderIndx,int cameraIndx,int buffer,bool toClear,bool debugMode);
+	virtual void Draw(int shaderIndx,int cameraIndx,int buffer,bool toClear,bool debugMode, std::vector<int> viewportCoordinates);
 	virtual ~Scene(void);
 
 	void MoveCamera(int cameraIndx,int type,float amt);

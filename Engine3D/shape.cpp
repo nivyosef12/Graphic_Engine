@@ -37,7 +37,6 @@ Shape::Shape(const int SimpleShapeType,unsigned int mode)
 
 }
 
-
 void Shape::Draw( const std::vector<Shader*> shaders, const std::vector<Texture*> textures,bool isPicking)
 {
 	if(texID>=0)
