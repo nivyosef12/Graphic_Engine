@@ -1,6 +1,7 @@
 // TODO list
 // 1. global vars
-// 2.print matrix
+// 2. print matrix
+// 3. sobel
 
 #define _USE_MATH_DEFINES
 
@@ -39,26 +40,21 @@ void Game::Init()
 	AddShape(Plane, -1, TRIANGLES);
 
 	//add grayscale texture
-	std::string fileName = "../res/textures/lena256.jpg";
+	std::string fileName = "../res/textures/5.jpg";
 	int width, height, numComponents;
 	unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
+	if (data == NULL) {
+		std::cerr << "Unable to load texture: " << fileName << std::endl;
+		exit(1);
+	}
 	AddTexture(fileName, false);
-	//set grayscale shape
-	/*AddShape(Plane, -1, TRIANGLES);
-
-	pickedShape = 0;
-	SetShapeTex(0, 0);*/
 
 	//add texture for edge detection
 	unsigned char* edge_detection_data = new unsigned char[width * height * 4];
 	edge_detection(data, edge_detection_data, width, height);
 	AddTexture(width, height, edge_detection_data);
 	delete[] edge_detection_data;
-	//set edge detection shape
-	/*AddShape(Plane, -1, TRIANGLES);
-	pickedShape = 1;
-	SetShapeTex(1, 1);*/
-	
+
 	//add texture for halftone
 	int width2 = width * 2;
 	int height2 = height * 2;
@@ -66,20 +62,12 @@ void Game::Init()
 	halftone(data, halftone_data, width2, height2);
 	AddTexture(width2, height2, halftone_data);
 	delete[] halftone_data;
-	//set halftone shape
-	/*AddShape(Plane, -1, TRIANGLES);
-	pickedShape = 2;
-	SetShapeTex(2, 2);*/
 
 	//add texture for floyd-steinberg
 	unsigned char* floyd_steinberg_data = new unsigned char[width * height * 4];
 	floyd_steinberg(data, floyd_steinberg_data, width, height);
 	AddTexture(width, height, floyd_steinberg_data);
 	delete[] floyd_steinberg_data;
-	//set floyd-steinberg shape
-	/*AddShape(Plane, -1, TRIANGLES);
-	pickedShape = 3;
-	SetShapeTex(3, 3);*/
 	
 	MoveCamera(0,zTranslate,1.5);
 	pickedShape = -1;
@@ -96,11 +84,13 @@ void Game::edge_detection(unsigned char* data, unsigned char* new_data, int widt
 	float* pixel_theta = new float[4 * width * height]; //TODO: memory leaks!!
 	unsigned char* non_max_suppression_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
 
-
 	smoothing(data, smoothed_data, width, height);
+
 	derivative(smoothed_data, derived_data, pixel_theta, width, height);
+
 	non_max_suppression(derived_data, non_max_suppression_data, pixel_theta, width, height);
-	hysteresis(non_max_suppression_data, new_data, width, height, 2, 20);
+
+	hysteresis(non_max_suppression_data, new_data, width, height, 18, 40);
 
 	delete[] smoothed_data;
 	delete[] derived_data;
@@ -114,7 +104,7 @@ void Game::smoothing(unsigned char* data, unsigned char* new_data, int image_wid
 	const int data_size = 4 * image_height * image_width;
 	const int k = 2;
 	const int kernel_size = (2 * k) + 1;
-	const double sigma = 0.97;
+	const double sigma = 1.175;
 	std::vector<std::vector<float>> gaussian(kernel_size, std::vector<float>(kernel_size, 0));
 
 	for (int i = 0; i < kernel_size; i++) {
@@ -126,7 +116,9 @@ void Game::smoothing(unsigned char* data, unsigned char* new_data, int image_wid
 		}
 	}
 	std::vector<std::vector<float>>& gaussian_ref = gaussian;
+
 	convolution(data, new_data, gaussian_ref, data_size, image_width, image_height);  // smoothing with gaussian filter
+
 }
 
 void Game::derivative(unsigned char* data, unsigned char* new_data, float* pixel_theta, int image_width, int image_height) {
@@ -135,17 +127,17 @@ void Game::derivative(unsigned char* data, unsigned char* new_data, float* pixel
 	unsigned char* new_data_gx = new unsigned char[data_size]; 
 	unsigned char* new_data_gy = new unsigned char[data_size];
 
-	/*std::vector<std::vector<float>> Gx{
-	{-1, 0, 1},
-	{-2, 0, 2},
-	{-1, 0, 1}
+	std::vector<std::vector<float>> Gx{
+	{1, 0, -1},
+	{2, 0, -2},
+	{1, 0, -1}
 	};
 	std::vector<std::vector<float>> Gy{
-	{-1, -2, -1},
+	{1, 2, 1},
 	{0, 0, 0},
-	{1, 2, 1}
-	};*/
-
+	{-1, -2, -1}
+	};
+	/*
 	float param = 1.7;
 	std::vector<std::vector<float>> Gx{
 	{0, 0, 0},
@@ -157,7 +149,7 @@ void Game::derivative(unsigned char* data, unsigned char* new_data, float* pixel
 	{0, param, 0},
 	{0, -param, 0}
 	};
-
+	*/
 	std::vector<std::vector<float>>& Gx_ref = Gx;
 	std::vector<std::vector<float>>& Gy_ref = Gy;
 
@@ -330,7 +322,6 @@ void Game::thresholding_pixel(unsigned char* data, unsigned char* new_data, std:
 		new_data[index] = is_not_edge;
 }
 
-
 void Game::convolution(unsigned char* data, unsigned char* new_data, std::vector<std::vector<float>>& kernel, int data_size, int image_width, int image_height)
 {
 	const int kernel_size = kernel.size();
@@ -352,8 +343,12 @@ void Game::convolution(unsigned char* data, unsigned char* new_data, std::vector
 			for (int matrix_j = 0; matrix_j < kernel_size; matrix_j++) {
 
 				int column = data_column_as_3d_mat - middle + matrix_j;
-				if (row >= 0 && column >= 0)
+				if (row >= 0 && column >= 0 && row < image_height && column < image_width) {
+					if (data_size <= row * image_width * 4 + column * 4 + data_color_as_3d_mat) {
+						continue;
+					}
 					matrix[matrix_i][matrix_j] = data[row * image_width * 4 + column * 4 + data_color_as_3d_mat];
+				}
 			}
 		}
 
@@ -369,7 +364,6 @@ void Game::convolution(unsigned char* data, unsigned char* new_data, std::vector
 		new_data[data_i] = (char)(abs((int)new_pixel));
 	}
 }
-
 int Game::check_neighbor(int row, int column, int pixel, int up_down, int left_right, int width, int height) {
 	int new_row = row + up_down;
 	int new_column = column + left_right;

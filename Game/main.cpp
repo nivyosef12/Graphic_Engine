@@ -5,8 +5,8 @@
 
 int main(int argc,char *argv[])
 {
-	const int DISPLAY_WIDTH = 512;
-	const int DISPLAY_HEIGHT = 512;
+	const int DISPLAY_WIDTH = 1024;
+	const int DISPLAY_HEIGHT = 1024;
 	const float CAMERA_ANGLE = 0.0f;
 	const float NEAR = 1.0f;
 	const float FAR = 100.0f;
@@ -23,7 +23,7 @@ int main(int argc,char *argv[])
 
 	while(!display.CloseWindow())
 	{
-		int picture_size = 256;
+		int picture_size = 512;
 		scn->SetShapeTex(0, 0);
 		scn->Draw(1,0,scn->BACK,true,false,std::vector<int>{picture_size, 0, picture_size, picture_size});
 		scn->SetShapeTex(0, 1);
