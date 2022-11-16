@@ -78,7 +78,7 @@
 		cameras.back()->MyTranslate(pos,0);
 	}
 
-	void Scene::Draw(int shaderIndx,int cameraIndx,int buffer,bool toClear,bool debugMode)
+	void Scene::Draw(int shaderIndx, int cameraIndx, int buffer, bool toClear, bool debugMode, std::vector<int> viewportCoordinates={})
 	{
 		glEnable(GL_DEPTH_TEST);
 		glm::mat4 Normal = MakeTrans();
@@ -93,6 +93,9 @@
 				Clear(0,0,0,0);
 		}
 
+		if (viewportCoordinates.size() > 0)
+			glViewport(viewportCoordinates[0], viewportCoordinates[1], viewportCoordinates[2], viewportCoordinates[3]);
+		
 		for (unsigned int i=0; i<shapes.size();i++)
 		{
 			if(shapes[i]->Is2Render())
