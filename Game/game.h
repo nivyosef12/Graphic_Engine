@@ -1,5 +1,6 @@
 #pragma once
 #include "scene.h"
+#include <functional>
 
 class Game : public Scene
 {
@@ -14,13 +15,24 @@ public:
 	void WhenTranslate();
 	void Motion();
 	~Game(void);
+
 private:
-	void edge_detection(unsigned char* data, unsigned char* new_data, int width, int height);
 	void halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, int width, std::vector<std::vector<unsigned char>>& halftone_patterns);
 	void halftone(unsigned char* data, unsigned char* new_data, int width, int height);
+  
 	void floyd_steinberg_pixel(std::vector<std::vector<float>>& new_data_float_values, int row_num, int column_num, int width, int height, std::vector<float>& colors);
 	void floyd_steinberg(unsigned char* data, unsigned char* new_data, int width, int height);
+  
 	void print_matrix(unsigned char* data, int width, int height);
+ 
+	void edge_detection(unsigned char* data, unsigned char* new_data, int image_width, int image_height);
+	void smoothing(unsigned char* data, unsigned char* new_data, int image_width, int image_height);
+	void derivative(unsigned char* data, unsigned char* new_data, float* pixel_theta, int image_width, int image_height);
+	void convolution(unsigned char* data, unsigned char* new_data, std::vector<std::vector<float>>& kernel, int data_size, int image_width, int image_height);
+	void non_max_suppression(unsigned char* data, unsigned char* new_data, float* pixel_theta, int image_width, int image_height);
+	void hysteresis(unsigned char* data, unsigned char* new_data, int image_width, int image_height, double low_threshold, double high_threshold);
+	int check_neighbor(int x, int y, int z, int up_down, int left_right, int width, int height);
+	void thresholding_pixel(unsigned char* data, unsigned char* new_data, std::vector<std::vector<int>>& neighbors_ref, int index, int width, int height, double low_threshold, double high_threshold);
 
 };
 
