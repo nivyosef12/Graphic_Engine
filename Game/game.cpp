@@ -1,7 +1,7 @@
 // TODO list
 // 1. global vars
 // 2. print matrix
-// 3. sobel
+// 3. check if lena is top left
 
 #define _USE_MATH_DEFINES
 
@@ -40,7 +40,7 @@ void Game::Init()
 	AddShape(Plane, -1, TRIANGLES);
 
 	//add grayscale texture
-	std::string fileName = "../res/textures/5.jpg";
+	std::string fileName = "../res/textures/messi.jpg";
 	int width, height, numComponents;
 	unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
 	if (data == NULL) {
