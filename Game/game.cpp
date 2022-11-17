@@ -1,7 +1,4 @@
-// TODO list
-// 1. global vars
-// 2. print matrix
-// 3. check if lena is top left
+
 
 #define _USE_MATH_DEFINES
 
@@ -12,6 +9,19 @@
 #include "stb_image.h"
 #include <cmath>
 #include <map>
+
+//constants
+const double SIGMA = 1.175;
+const int THRESHOLD_UPPER_BOUND = 40;
+const int THRESHOLD_LOWER_BOUND = 18;
+int NUM_OF_COLORS = 4;
+int WIDTH;
+int HEIGHT;
+int NUM_COMPONENTS;
+int DATA_SIZE;
+const int NORMAL = 0;
+const int GRAYSCALE = 1;
+const int BLACK_AND_WHITE = 2;
 
 static void printMat(const glm::mat4 mat)
 {
@@ -40,33 +50,34 @@ void Game::Init()
 	AddShape(Plane, -1, TRIANGLES);
 
 	//add grayscale texture
-	std::string fileName = "../res/textures/messi.jpg";
-	int width, height, numComponents;
-	unsigned char* data = stbi_load((fileName).c_str(), &width, &height, &numComponents, 4); //extract data from the image
+	std::string fileName = "../res/textures/lena256.jpg";
+	unsigned char* data = stbi_load((fileName).c_str(), &WIDTH, &HEIGHT, &NUM_COMPONENTS, NUM_OF_COLORS); //extract data from the image
 	if (data == NULL) {
 		std::cerr << "Unable to load texture: " << fileName << std::endl;
 		exit(1);
 	}
+	DATA_SIZE = WIDTH * HEIGHT * NUM_OF_COLORS;
 	AddTexture(fileName, false);
 
 	//add texture for edge detection
-	unsigned char* edge_detection_data = new unsigned char[width * height * 4];
-	edge_detection(data, edge_detection_data, width, height);
-	AddTexture(width, height, edge_detection_data);
+	unsigned char* edge_detection_data = new unsigned char[DATA_SIZE];
+	edge_detection(data, edge_detection_data);
+	AddTexture(WIDTH, HEIGHT, edge_detection_data);
+	print_matrix(edge_detection_data, "../project/assignment/img4.txt", BLACK_AND_WHITE);
 	delete[] edge_detection_data;
 
 	//add texture for halftone
-	int width2 = width * 2;
-	int height2 = height * 2;
-	unsigned char* halftone_data = new unsigned char[width2 * height2 * 4];
-	halftone(data, halftone_data, width2, height2);
-	AddTexture(width2, height2, halftone_data);
+	unsigned char* halftone_data = new unsigned char[DATA_SIZE * 4];
+	halftone(data, halftone_data);
+	AddTexture(2 * WIDTH, 2 * HEIGHT, halftone_data);
+	print_matrix(halftone_data, "../project/assignment/img5.txt", BLACK_AND_WHITE);
 	delete[] halftone_data;
 
 	//add texture for floyd-steinberg
-	unsigned char* floyd_steinberg_data = new unsigned char[width * height * 4];
-	floyd_steinberg(data, floyd_steinberg_data, width, height);
-	AddTexture(width, height, floyd_steinberg_data);
+	unsigned char* floyd_steinberg_data = new unsigned char[DATA_SIZE];
+	floyd_steinberg(data, floyd_steinberg_data);
+	AddTexture(WIDTH, HEIGHT, floyd_steinberg_data);
+	print_matrix(floyd_steinberg_data, "../project/assignment/img6.txt", GRAYSCALE);
 	delete[] floyd_steinberg_data;
 	
 	MoveCamera(0,zTranslate,1.5);
@@ -77,20 +88,20 @@ void Game::Init()
 	//ReadPixel(); //uncomment when you are reading from the z-buffer
 }
 
-void Game::edge_detection(unsigned char* data, unsigned char* new_data, int width, int height)
+void Game::edge_detection(unsigned char* data, unsigned char* new_data)
 {
-	unsigned char* smoothed_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
-	unsigned char* derived_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
-	float* pixel_theta = new float[4 * width * height]; //TODO: memory leaks!!
-	unsigned char* non_max_suppression_data = new unsigned char[4 * width * height]; //TODO: memory leaks!!
+	unsigned char* smoothed_data = new unsigned char[DATA_SIZE]; 
+	unsigned char* derived_data = new unsigned char[DATA_SIZE];
+	float* pixel_theta = new float[DATA_SIZE];
+	unsigned char* non_max_suppression_data = new unsigned char[DATA_SIZE];
 
-	smoothing(data, smoothed_data, width, height);
+	smoothing(data, smoothed_data);
 
-	derivative(smoothed_data, derived_data, pixel_theta, width, height);
+	derivative(smoothed_data, derived_data, pixel_theta);
 
-	non_max_suppression(derived_data, non_max_suppression_data, pixel_theta, width, height);
+	non_max_suppression(derived_data, non_max_suppression_data, pixel_theta);
 
-	hysteresis(non_max_suppression_data, new_data, width, height, 18, 40);
+	hysteresis(non_max_suppression_data, new_data);
 
 	delete[] smoothed_data;
 	delete[] derived_data;
@@ -98,34 +109,31 @@ void Game::edge_detection(unsigned char* data, unsigned char* new_data, int widt
 	delete[] non_max_suppression_data;
 }
 
-void Game::smoothing(unsigned char* data, unsigned char* new_data, int image_width, int image_height) {
+void Game::smoothing(unsigned char* data, unsigned char* new_data) {
 
 	// generate Gaussian filter kernel of size (2k +1)X(2k + 1)
-	const int data_size = 4 * image_height * image_width;
 	const int k = 2;
 	const int kernel_size = (2 * k) + 1;
-	const double sigma = 1.175;
 	std::vector<std::vector<float>> gaussian(kernel_size, std::vector<float>(kernel_size, 0));
 
 	for (int i = 0; i < kernel_size; i++) {
 		for (int j = 0; j < kernel_size; j++) {
 
-			float normal = 1 / (2.0 * M_PI * pow(sigma, 4));
-			gaussian[i][j] = normal * exp(-((pow(i - k, 2) + pow(j - k, 2)) / (2.0 * pow(sigma, 2))));
+			float normal = 1 / (2.0 * M_PI * pow(SIGMA, 4));
+			gaussian[i][j] = normal * exp(-((pow(i - k, 2) + pow(j - k, 2)) / (2.0 * pow(SIGMA, 2))));
 
 		}
 	}
 	std::vector<std::vector<float>>& gaussian_ref = gaussian;
 
-	convolution(data, new_data, gaussian_ref, data_size, image_width, image_height);  // smoothing with gaussian filter
+	convolution(data, new_data, gaussian_ref);  // smoothing with gaussian filter
 
 }
 
-void Game::derivative(unsigned char* data, unsigned char* new_data, float* pixel_theta, int image_width, int image_height) {
+void Game::derivative(unsigned char* data, unsigned char* new_data, float* pixel_theta) {
 
-	const int data_size = 4 * image_height * image_width;
-	unsigned char* new_data_gx = new unsigned char[data_size]; 
-	unsigned char* new_data_gy = new unsigned char[data_size];
+	unsigned char* new_data_gx = new unsigned char[DATA_SIZE]; 
+	unsigned char* new_data_gy = new unsigned char[DATA_SIZE];
 
 	std::vector<std::vector<float>> Gx{
 	{1, 0, -1},
@@ -153,10 +161,10 @@ void Game::derivative(unsigned char* data, unsigned char* new_data, float* pixel
 	std::vector<std::vector<float>>& Gx_ref = Gx;
 	std::vector<std::vector<float>>& Gy_ref = Gy;
 
-	convolution(data, new_data_gx, Gx_ref, data_size, image_width, image_height);
-	convolution(data, new_data_gy, Gy_ref, data_size, image_width, image_height);
+	convolution(data, new_data_gx, Gx_ref);
+	convolution(data, new_data_gy, Gy_ref);
 
-	for (int i = 0; i < data_size; i++) {
+	for (int i = 0; i < DATA_SIZE; i++) {
 		new_data[i] = sqrt((pow(new_data_gx[i], 2) + pow(new_data_gy[i], 2)));
 		if (new_data_gx[i] == 0)
 			pixel_theta[i] = M_PI / 2;
@@ -168,9 +176,8 @@ void Game::derivative(unsigned char* data, unsigned char* new_data, float* pixel
 	delete[] new_data_gy;
 }
 
-void Game::non_max_suppression(unsigned char* data, unsigned char* new_data, float* pixel_theta, int image_width, int image_height){
+void Game::non_max_suppression(unsigned char* data, unsigned char* new_data, float* pixel_theta){
 
-	const int data_size = 4 * image_height * image_width;
 	int index_of_neighbor_in_1d_array;
 
 	std::map <int, std::vector<int>> angle_step = {
@@ -181,12 +188,12 @@ void Game::non_max_suppression(unsigned char* data, unsigned char* new_data, flo
 		{8, {-1, 0, 1, 0}}
 	};
 
-	for (int i = 0; i < data_size; i++) {
+	for (int i = 0; i < DATA_SIZE; i++) {
 
 		// 4 is (R, G ,B, alpha)
-		int data_row_as_3d_mat = i / (4 * image_width);
-		int data_column_as_3d_mat = (i % (4 * image_width)) / 4;
-		int data_color_as_3d_mat = i % 4;
+		int data_row_as_3d_mat = i / (NUM_OF_COLORS * WIDTH);
+		int data_column_as_3d_mat = (i % (NUM_OF_COLORS * WIDTH)) / NUM_OF_COLORS;
+		int data_color_as_3d_mat = i % NUM_OF_COLORS;
 
 		// convert theta into int represinting its range
 		float curr_theta = pixel_theta[i];
@@ -202,12 +209,12 @@ void Game::non_max_suppression(unsigned char* data, unsigned char* new_data, flo
 		}
 
 		// Compare edge strength of current pixel with edge strength of pixel in positive and negative gradient directions
-		index_of_neighbor_in_1d_array = check_neighbor(data_row_as_3d_mat, data_column_as_3d_mat, data_color_as_3d_mat, steps[0], steps[1], image_width, image_height);
+		index_of_neighbor_in_1d_array = check_neighbor(data_row_as_3d_mat, data_column_as_3d_mat, data_color_as_3d_mat, steps[0], steps[1]);
 		if (index_of_neighbor_in_1d_array != -1 && data[i] < data[index_of_neighbor_in_1d_array]) {
 			new_data[i] = 0;
 			continue;
 		}
-		index_of_neighbor_in_1d_array = check_neighbor(data_row_as_3d_mat, data_column_as_3d_mat, data_color_as_3d_mat, steps[2], steps[3], image_width, image_height);
+		index_of_neighbor_in_1d_array = check_neighbor(data_row_as_3d_mat, data_column_as_3d_mat, data_color_as_3d_mat, steps[2], steps[3]);
 		if (index_of_neighbor_in_1d_array != -1 && data[i] < data[index_of_neighbor_in_1d_array]) {
 			new_data[i] = 0;
 			continue;
@@ -218,13 +225,12 @@ void Game::non_max_suppression(unsigned char* data, unsigned char* new_data, flo
 	}
 }
 
-void Game::hysteresis(unsigned char* data, unsigned char* new_data, int image_width, int image_height, double low_threshold, double high_threshold) {
+void Game::hysteresis(unsigned char* data, unsigned char* new_data) {
 	
-	const int data_size = 4 * image_height * image_width;
-	unsigned char* top_left_to_bottom_right = new unsigned char[data_size]; 
-	unsigned char* bottom_right_to_top_left = new unsigned char[data_size];
-	unsigned char* top_right_to_bottom_left = new unsigned char[data_size];
-	unsigned char* bottom_left_to_top_right = new unsigned char[data_size];
+	unsigned char* top_left_to_bottom_right = new unsigned char[DATA_SIZE]; 
+	unsigned char* bottom_right_to_top_left = new unsigned char[DATA_SIZE];
+	unsigned char* top_right_to_bottom_left = new unsigned char[DATA_SIZE];
+	unsigned char* bottom_left_to_top_right = new unsigned char[DATA_SIZE];
 
 
 	std::vector<std::vector<int>>neighbors{
@@ -241,31 +247,31 @@ void Game::hysteresis(unsigned char* data, unsigned char* new_data, int image_wi
 	
 	std::vector<std::vector<int>>&neighbors_ref = neighbors;
 
-	for (int i = 0; i < data_size; i++) {
+	for (int i = 0; i < DATA_SIZE; i++) {
 		// top_left_to_bottom_right
-		thresholding_pixel(data, top_left_to_bottom_right, neighbors_ref, i, image_width, image_height, low_threshold, high_threshold);
+		thresholding_pixel(data, top_left_to_bottom_right, neighbors_ref, i);
 
 		// bottom_right_to_top_left
-		thresholding_pixel(data, bottom_right_to_top_left, neighbors_ref, (data_size - 1) - i, image_width, image_height, low_threshold, high_threshold);
+		thresholding_pixel(data, bottom_right_to_top_left, neighbors_ref, (DATA_SIZE - 1) - i);
 	}	
 
 	int row = 0;
-	while (row < image_height) {
-		for (int column = (image_width * 4) - 1; column >= 0; column--) {
+	while (row < HEIGHT) {
+		for (int column = (WIDTH * NUM_OF_COLORS) - 1; column >= 0; column--) {
 			// index in 1d array
-			int index = row * image_width * 4 + column;
+			int index = row * WIDTH * NUM_OF_COLORS + column;
 
 			// top_right_to_bottom_left
-			thresholding_pixel(data, top_right_to_bottom_left, neighbors_ref, index, image_width, image_height, low_threshold, high_threshold);
+			thresholding_pixel(data, top_right_to_bottom_left, neighbors_ref, index);
 
 			// bottom_left_to_top_right
-			thresholding_pixel(data, bottom_left_to_top_right, neighbors_ref, (data_size - 1) - index, image_width, image_height, low_threshold, high_threshold);
+			thresholding_pixel(data, bottom_left_to_top_right, neighbors_ref, (DATA_SIZE - 1) - index);
 		}
 
 		row += 1;
 	}
 
-	for (int i = 0; i < data_size; i++) {
+	for (int i = 0; i < DATA_SIZE; i++) {
 		new_data[i] = top_left_to_bottom_right[i] + bottom_right_to_top_left[i] + top_right_to_bottom_left[i] + bottom_left_to_top_right[i];
 	}
 
@@ -276,10 +282,9 @@ void Game::hysteresis(unsigned char* data, unsigned char* new_data, int image_wi
 
 }
 
-void Game::thresholding_pixel(unsigned char* data, unsigned char* new_data, std::vector<std::vector<int>>& neighbors, int index, int width, int height, double low_threshold, double high_threshold) {
+void Game::thresholding_pixel(unsigned char* data, unsigned char* new_data, std::vector<std::vector<int>>& neighbors, int index) {
 	const int is_edge = 255;
 	const int is_not_edge = 0;
-	const int data_size = 4 * height * width;
 
 	int data_row_as_3d_mat;
 	int data_column_as_3d_mat;
@@ -289,27 +294,27 @@ void Game::thresholding_pixel(unsigned char* data, unsigned char* new_data, std:
 
 
 	// strong pixel
-	if (data[index] > high_threshold) {
+	if (data[index] > THRESHOLD_UPPER_BOUND) {
 		new_data[index] = is_edge;
 		return;
 	}
 
 	// unrelevant pixel
-	else if (data[index] < low_threshold) {
+	else if (data[index] < THRESHOLD_LOWER_BOUND) {
 		// do nothing ??
 		new_data[index] = is_not_edge;
 		return;
 	}
 
 	// weak pixel
-	// 4 is (R, G ,B, alpha)
-	data_row_as_3d_mat = index / (4 * width);
-	data_column_as_3d_mat = (index % (4 * width)) / 4;
-	data_color_as_3d_mat = index % 4;
+	// NUM_OF_COLORS = 4 for (R, G ,B, alpha)
+	data_row_as_3d_mat = index / (NUM_OF_COLORS * WIDTH);
+	data_column_as_3d_mat = (index % (NUM_OF_COLORS * WIDTH)) / NUM_OF_COLORS;
+	data_color_as_3d_mat = index % NUM_OF_COLORS;
 	weak_to_strong = false;
 
 	for (std::vector<int> neigbor : neighbors) {
-		index_of_neighbor_in_1d_array = check_neighbor(data_row_as_3d_mat, data_column_as_3d_mat, data_color_as_3d_mat, neigbor[0], neigbor[1], width, height);
+		index_of_neighbor_in_1d_array = check_neighbor(data_row_as_3d_mat, data_column_as_3d_mat, data_color_as_3d_mat, neigbor[0], neigbor[1]);
 		if (index_of_neighbor_in_1d_array != -1 && data[index_of_neighbor_in_1d_array]  == 255) {
 			new_data[index] = is_edge;
 			weak_to_strong = true;
@@ -322,7 +327,7 @@ void Game::thresholding_pixel(unsigned char* data, unsigned char* new_data, std:
 		new_data[index] = is_not_edge;
 }
 
-void Game::convolution(unsigned char* data, unsigned char* new_data, std::vector<std::vector<float>>& kernel, int data_size, int image_width, int image_height)
+void Game::convolution(unsigned char* data, unsigned char* new_data, std::vector<std::vector<float>>& kernel)
 {
 	const int kernel_size = kernel.size();
 	const int middle = (kernel_size - 1) / 2;
@@ -330,12 +335,12 @@ void Game::convolution(unsigned char* data, unsigned char* new_data, std::vector
 	// generate matrix (in size of kernel) to be multiplied by kernel
 	std::vector<std::vector<float>> matrix(kernel_size, std::vector<float>(kernel_size, 0));
 
-	for (int data_i = 0; data_i < data_size; data_i++) {
+	for (int data_i = 0; data_i < DATA_SIZE; data_i++) {
 
-		// 4 is (R, G ,B, alpha)
-		int data_row_as_3d_mat = data_i / (4 * image_width);
-		int data_column_as_3d_mat = (data_i % (4 * image_width)) / 4;
-		int data_color_as_3d_mat = data_i % 4;
+		// NUM_OF_COLORS = 4 for (R, G ,B, alpha)
+		int data_row_as_3d_mat = data_i / (NUM_OF_COLORS * WIDTH);
+		int data_column_as_3d_mat = (data_i % (NUM_OF_COLORS * WIDTH)) / NUM_OF_COLORS;
+		int data_color_as_3d_mat = data_i % NUM_OF_COLORS;
 
 		for (int matrix_i = 0; matrix_i < kernel_size; matrix_i++) {
 
@@ -343,11 +348,11 @@ void Game::convolution(unsigned char* data, unsigned char* new_data, std::vector
 			for (int matrix_j = 0; matrix_j < kernel_size; matrix_j++) {
 
 				int column = data_column_as_3d_mat - middle + matrix_j;
-				if (row >= 0 && column >= 0 && row < image_height && column < image_width) {
-					if (data_size <= row * image_width * 4 + column * 4 + data_color_as_3d_mat) {
+				if (row >= 0 && column >= 0 && row < HEIGHT && column < WIDTH) {
+					if (DATA_SIZE <= row * WIDTH * NUM_OF_COLORS + column * NUM_OF_COLORS + data_color_as_3d_mat) {
 						continue;
 					}
-					matrix[matrix_i][matrix_j] = data[row * image_width * 4 + column * 4 + data_color_as_3d_mat];
+					matrix[matrix_i][matrix_j] = data[row * WIDTH * NUM_OF_COLORS + column * NUM_OF_COLORS + data_color_as_3d_mat];
 				}
 			}
 		}
@@ -364,13 +369,13 @@ void Game::convolution(unsigned char* data, unsigned char* new_data, std::vector
 		new_data[data_i] = (char)(abs((int)new_pixel));
 	}
 }
-int Game::check_neighbor(int row, int column, int pixel, int up_down, int left_right, int width, int height) {
+int Game::check_neighbor(int row, int column, int pixel, int up_down, int left_right) {
 	int new_row = row + up_down;
 	int new_column = column + left_right;
 	int new_pixel = pixel;
-	int neighbor_index = new_row * width * 4 + new_column * 4 + new_pixel;
+	int neighbor_index = new_row * WIDTH * NUM_OF_COLORS + new_column * NUM_OF_COLORS + new_pixel;
 
-	if ((0 <= new_row && new_row < height) && (0 <= new_column && new_column < width)) {
+	if ((0 <= new_row && new_row < HEIGHT) && (0 <= new_column && new_column < WIDTH)) {
 		return neighbor_index;
 	}
 
@@ -378,29 +383,29 @@ int Game::check_neighbor(int row, int column, int pixel, int up_down, int left_r
 
 }
 
-void Game::halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, int width, std::vector<std::vector<unsigned char>>& halftone_patterns)
+void Game::halftone_pixel(unsigned char* data, unsigned char* new_data, int pixel_num, std::vector<std::vector<unsigned char>>& halftone_patterns)
 {
-	int row_num_in_data = pixel_num / (4 * width / 2);
-	int column_num_in_data = (pixel_num % (4 * width / 2)) / 4;
+	int row_num_in_data = pixel_num / (NUM_OF_COLORS * WIDTH);
+	int column_num_in_data = (pixel_num % (NUM_OF_COLORS * WIDTH)) / NUM_OF_COLORS;
 
 	int row_num_in_new_data = 2 * row_num_in_data;
 	int column_num_in_new_data = 2 * column_num_in_data;
 	
-	for (int color = 0; color < 4; color++) {
+	for (int color = 0; color < NUM_OF_COLORS; color++) {
 
 		int halftone_pattern_index = ((float)data[pixel_num + color]/256) * 5; // this is the index of the halftone option for the ith color of this pixel (e.g. if the value is under 64 the option will be 0)
 
 		std::vector<unsigned char> halftone_pattern = halftone_patterns[halftone_pattern_index];
 
-		new_data[4 * width * row_num_in_new_data + 4 * column_num_in_new_data + color] = halftone_pattern[0];		
-		new_data[4 * width * row_num_in_new_data + 4 * column_num_in_new_data + color + 4] = halftone_pattern[1];
-		new_data[4 * width * (row_num_in_new_data + 1) + 4 * column_num_in_new_data + color] = halftone_pattern[2];
-		new_data[4 * width * (row_num_in_new_data + 1) + 4 * column_num_in_new_data + color + 4] = halftone_pattern[3];
+		new_data[NUM_OF_COLORS * 2 * WIDTH * row_num_in_new_data + NUM_OF_COLORS * column_num_in_new_data + color] = halftone_pattern[0];
+		new_data[NUM_OF_COLORS * 2 * WIDTH * row_num_in_new_data + NUM_OF_COLORS * column_num_in_new_data + color + NUM_OF_COLORS] = halftone_pattern[1];
+		new_data[NUM_OF_COLORS * 2 * WIDTH * (row_num_in_new_data + 1) + NUM_OF_COLORS * column_num_in_new_data + color] = halftone_pattern[2];
+		new_data[NUM_OF_COLORS * 2 * WIDTH * (row_num_in_new_data + 1) + NUM_OF_COLORS * column_num_in_new_data + color + NUM_OF_COLORS] = halftone_pattern[3];
 
 	}
 }
 
-void Game::halftone(unsigned char* data, unsigned char* new_data, int width, int height)
+void Game::halftone(unsigned char* data, unsigned char* new_data)
 {
 
 	std::vector<std::vector<unsigned char>> halftone_patterns
@@ -412,13 +417,13 @@ void Game::halftone(unsigned char* data, unsigned char* new_data, int width, int
 		{255, 255, 255, 255},
 	};
 	
-	for (int i = 0; i < width/2 * height/2 * 4; i+=4) {
-		halftone_pixel(data, new_data, i, width, halftone_patterns);
+	for (int i = 0; i < DATA_SIZE; i+= NUM_OF_COLORS) {
+		halftone_pixel(data, new_data, i, halftone_patterns);
 	}
 	
 }
 
-void Game::floyd_steinberg_pixel(std::vector<std::vector<float>>& new_data_float_values, int row_num, int column_num, int width, int height, std::vector<float>& colors)
+void Game::floyd_steinberg_pixel(std::vector<std::vector<float>>& new_data_float_values, int row_num, int column_num, std::vector<float>& colors)
 {
 	float original_color = new_data_float_values[row_num][column_num];
 	float new_color = colors[(int)(original_color / 16)];
@@ -426,26 +431,24 @@ void Game::floyd_steinberg_pixel(std::vector<std::vector<float>>& new_data_float
 
 	new_data_float_values[row_num][column_num] = new_color;
 	
-	if (column_num + 4 < width * 4)
-		new_data_float_values[row_num][column_num + 4] += diff * 7 / 16;
+	if (column_num + NUM_OF_COLORS < WIDTH * NUM_OF_COLORS)
+		new_data_float_values[row_num][column_num + NUM_OF_COLORS] += diff * 7 / 16;
 	
-	if (row_num + 1 < height) {
-		if (column_num - 4 >= 0)
-			new_data_float_values[row_num + 1][column_num - 4] += diff * 3 / 16;
+	if (row_num + 1 < HEIGHT) {
+		if (column_num - NUM_OF_COLORS >= 0)
+			new_data_float_values[row_num + 1][column_num - NUM_OF_COLORS] += diff * 3 / 16;
 
 		new_data_float_values[row_num + 1][column_num] += diff * 5 / 16;
 
-		if (column_num + 4 < width * 4)
-			new_data_float_values[row_num + 1][column_num + 4] += diff * 1 / 16;
+		if (column_num + NUM_OF_COLORS < WIDTH * NUM_OF_COLORS)
+			new_data_float_values[row_num + 1][column_num + NUM_OF_COLORS] += diff * 1 / 16;
 	}
 	
 }
 
-void Game::floyd_steinberg(unsigned char* data, unsigned char* new_data, int width, int height)
+void Game::floyd_steinberg(unsigned char* data, unsigned char* new_data)
 {
-	int data_size = width * height * 4;
-
-	std::vector<std::vector<float>> new_data_float_values(height, std::vector<float>(width * 4)); //a matrix representing the float values of new_data
+	std::vector<std::vector<float>> new_data_float_values(HEIGHT, std::vector<float>(WIDTH * NUM_OF_COLORS)); //a matrix representing the float values of new_data
 	std::vector<std::vector<float>>& new_data_float_values_ref = new_data_float_values; //reference of the vector to pass into floyd_steinberg_pixel
 
 	std::vector<float> colors(16);
@@ -453,26 +456,39 @@ void Game::floyd_steinberg(unsigned char* data, unsigned char* new_data, int wid
 		colors[i] = ((float)i) * 256 / 16; //the 16 color options
 	}
 	
-	for (int i = 0; i < data_size; i++) {
-		int row_num = i / (4 * width);
-		int column_num = (i % (4 * width)) / 4;
-		int color = i % 4;
+	for (int i = 0; i < DATA_SIZE; i++) {
+		int row_num = i / (NUM_OF_COLORS * WIDTH);
+		int column_num = (i % (NUM_OF_COLORS * WIDTH)) / NUM_OF_COLORS;
+		int color = i % NUM_OF_COLORS;
 
 		new_data_float_values[row_num][column_num + color] = (float)((int)data[i]); //give the pixel it's original color
-		floyd_steinberg_pixel(new_data_float_values_ref, row_num, column_num + color, width, height, colors); //give the pixel it's new color and propagate the error
+		floyd_steinberg_pixel(new_data_float_values_ref, row_num, column_num + color, colors); //give the pixel it's new color and propagate the error
 		new_data[i] = (unsigned char)((int)new_data_float_values[row_num][column_num + color]); //convert the pixel's new color to unsigned char and enter it in new_data
 
 	}
 }
 
-void Game::print_matrix(unsigned char* data, int width, int height)
+void Game::print_matrix(unsigned char* data, const std::string file_name, int type_of_image=NORMAL)
 {
+	int constants_to_divide_by[] = {1, 256 / 16, 256 / 2};
+	
 	std::ofstream matrix_file;
-	matrix_file.open("matrix_file.txt");
+	matrix_file.open(file_name);
 
-	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width * 4; j+=4) {
-			matrix_file << (int)data[i * width * 4 + j] << " " << (int)data[i * width * 4 + j + 1] << " " << (int)data[i * width * 4 + j + 2] << " " << (int)data[i * width * 4 + j + 3] << "   ";
+	for (int i = 0; i < HEIGHT; i++) {
+		for (int j = 0; j < WIDTH * NUM_OF_COLORS; j+= NUM_OF_COLORS) {
+
+			int r = (int)data[i * WIDTH * NUM_OF_COLORS + j] / constants_to_divide_by[type_of_image];
+			int g = (int)data[i * WIDTH * NUM_OF_COLORS + j + 1] / constants_to_divide_by[type_of_image];
+			int b = (int)data[i * WIDTH * NUM_OF_COLORS + j + 2] / constants_to_divide_by[type_of_image];
+			int a = (int)data[i * WIDTH * NUM_OF_COLORS + j + 3] / constants_to_divide_by[type_of_image];
+
+			std::string end_char = ",";
+			if (i == HEIGHT - 1 && j == WIDTH * NUM_OF_COLORS - 4) {
+				end_char = "";
+			}
+
+			matrix_file << r << "," << g << "," << b << "," << a << end_char;
 		}
 		matrix_file << "\n\n";
 	}
