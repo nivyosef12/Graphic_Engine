@@ -4,12 +4,13 @@
 class MyShape
 {
 private:
-	std::tuple<float,float,float,float> coordinates;
-	std::tuple<float,float,float,float> color;
+	glm::vec4 coordinates;
+	glm::vec4 color;
 	char o_r_t;
 
 public:
-	MyShape(std::string line);
+	MyShape(char type, glm::vec4 coordinates);
+	void set_color(glm::vec4 color);
 	//TODO: rule of three?
 	~MyShape(void);
 };

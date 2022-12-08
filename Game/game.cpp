@@ -1,12 +1,19 @@
 #include "game.h"
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
+#include "my_shape.h"
+#include "light.h"
 
 
-std::vector<float> shapes; //TODO:not really float, will be determined later on
-std::vector<float> lights; //TODO:not really float, will be determined later on
+//global variables:
+std::vector<MyShape> shapes; 
+std::vector<Light> lights; 
 std::tuple<float,float,float,float> camera;
-//TODO: we may need to create a new classes MyShape and Light to hold all the information about shapes and lights
+int screen_size;
+int width;
+int height;
+float pixel_height;
+float pixel_width;
 
 static void printMat(const glm::mat4 mat)
 {
@@ -86,6 +93,39 @@ void Game::ray_tracing(std::string& scene_path, int width, int height, unsigned 
 {
 	//TODO:implement
 	//main function, will be called from Init
+
+	parse_scene(scene_path);
+	
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width/4; j++) {
+			
+			glm::vec3 pixel_coordinates = get_pixel_coordinates(i, j);
+			glm::vec4 color = send_ray_from_pixel(pixel_coordinates);
+			
+			for (int k = 0; k < 4; k++) {
+				data[i*width + j*4 + k] = color[k];
+			}
+		}
+	}
+
+}
+
+glm::vec3 Game::get_pixel_coordinates(int i, int j)
+{
+	float top_left_corner_of_pixel_y = (i / (width/4)) * 2 - 1;
+	float top_left_corner_of_pixel_x = ((j / height) * 2 - 1) * -1;
+
+	float center_of_pixel_y = top_left_corner_of_pixel_y - pixel_height/2;
+	float center_of_pixel_x = top_left_corner_of_pixel_x + pixel_width/2;
+
+	glm::vec3 pixel_coordinates(center_of_pixel_x, center_of_pixel_y, 0.f);
+	return pixel_coordinates;
+
+}
+
+glm::vec4 Game::send_ray_from_pixel(glm::vec3 pixel_coordinates)
+{
+	
 }
 
 void Game::parse_scene(std::string& scene_path)
