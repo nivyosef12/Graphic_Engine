@@ -3,7 +3,8 @@
 
 Light::Light(glm::vec4 direction)
 {
-	this->direction = direction;
+	this->direction = glm::vec3(direction);
+	this->location = glm::vec3(NAN, NAN, NAN);
 }
 
 void Light::set_intensity(glm::vec4 intensity)
@@ -13,7 +14,7 @@ void Light::set_intensity(glm::vec4 intensity)
 
 void Light::set_location(glm::vec4 location)
 {
-	this->location = location;
+	this->location = glm::vec3(location);
 }
 
 Light::~Light(void)

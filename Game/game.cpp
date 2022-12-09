@@ -9,6 +9,7 @@
 std::vector<MyShape> my_shapes; 
 std::vector<Light> lights; 
 glm::vec3 camera;
+glm::vec4 ambient_light;
 int screen_size;
 int width;
 int height;
@@ -113,8 +114,8 @@ void Game::ray_tracing(std::string& scene_path, int width, int height, unsigned 
 
 glm::vec3 Game::get_pixel_coordinates(int i, int j)
 {
-	float top_left_corner_of_pixel_y = (i / (width/4)) * 2 - 1;
-	float top_left_corner_of_pixel_x = ((j / height) * 2 - 1) * -1;
+	float top_left_corner_of_pixel_y = ((i / height) * 2 - 1) * -1;
+	float top_left_corner_of_pixel_x = (j / (width/4)) * 2 - 1;
 
 	float center_of_pixel_y = top_left_corner_of_pixel_y - pixel_height/2;
 	float center_of_pixel_x = top_left_corner_of_pixel_x + pixel_width/2;
@@ -126,19 +127,23 @@ glm::vec3 Game::get_pixel_coordinates(int i, int j)
 
 glm::vec4 Game::send_ray(glm::vec3 origin, glm::vec3 direction)
 {
-	glm::vec3 intersection_point;
-	MyShape* intersecting_shape;
+	glm::vec3 intersection_point(NAN, NAN, NAN);
+	int intersecting_shape_index;
 	for (int i = 0; i < my_shapes.size(); i++) {
-		glm::vec3 new_intersection_point = check_shape_intersection(my_shapes[i], origin, direction);
-		if (intersection_point[2] > new_intersection_point[2]) {
+		glm::vec3 new_intersection_point = check_shape_intersection(i, origin, direction);
+		if (intersection_point[2] == NAN || (new_intersection_point[2] != NAN && intersection_point[2] > new_intersection_point[2])) {
 			intersection_point = new_intersection_point;
-			*intersecting_shape = my_shapes[i];
+			intersecting_shape_index = i;
 		}
 	}
 
-	//AFTER BRANCH!!!
+	glm::vec4 color = ambient_light;
+	for (int i = 0; i < lights.size(); i++) {
+		color += diffuse(intersection_point, intersecting_shape_index, i);
+		color += specular(intersection_point, intersecting_shape_index, i);
+	}
 
-
+	return color;
 }
 
 void Game::parse_scene(std::string& scene_path)
@@ -147,28 +152,65 @@ void Game::parse_scene(std::string& scene_path)
 	//parse the scene.txt file
 }
 
-glm::vec3 Game::check_shape_intersection(MyShape shape, glm::vec3 origin, glm::vec3 direction)
+glm::vec3 Game::check_shape_intersection(int shape_index, glm::vec3 origin, glm::vec3 direction)
 {
 	//TODO:implement
 	//check if ray intersects with shape (sphere or plane) and return the coordinates of the
 	//closest intersection or None(?) if there is none (maybe nedds to return more things)
+
+	MyShape shape = my_shapes[shape_index];
+
+	glm::vec3 intersection_point(NAN, NAN, NAN);
+	if (shape.coordinates[3] > 0) {
+		//shape is a sphere:
+		glm::vec3 O = glm::vec3(shape.coordinates);
+		glm::vec3 L = O - origin;
+		float r = shape.coordinates[3];
+		float tm = glm::dot(L, direction);
+		float d2 = pow(glm::length(L), 2) - tm;
+
+		if (d2 <= pow(r, 2)) {
+			float th = sqrt(pow(r, 2) - d2);
+			float t = tm - th;
+			intersection_point = origin + t * direction;
+		}
+		return intersection_point;
+	} else {
+		//shape is a plane:
+		glm::vec3 N = glm::vec3(shape.coordinates);
+		float d = shape.coordinates[3];
+		float NdotV = glm::dot(N, direction);
+
+		if (NdotV != 0) {
+			float t = -1 * (glm::dot(N, origin) + d)/NdotV;
+			intersection_point = origin + t * direction;
+		} 
+		return intersection_point;
+	}
+
 }
 
-bool Game::check_light_intersection(Light light, glm::vec3 intersection_point)
+glm::vec3 Game::check_light_intersection(int light_index, glm::vec3 intersection_point)
 {
 	//TODO:implement
 	//check if the intersection_point between the ray and an object meets light (directional or spotlight),
 	//return True or False (maybe nedds to return more things)
+
+	Light light = lights[light_index];
+
+	if (light.location[0] == NAN) {
+		
+	}
 }
 
-glm::vec4 Game::diffuse(glm::vec3 intersection_point, glm::vec3 normal)
+glm::vec4 Game::diffuse(glm::vec3 intersection_point, int shape_index, int light_index)
 {
 	//TODO:implement
 	//calculates the diffuse part for every light source
 	//this function will call check_light_intersection for every light source
 }
 
-glm::vec4 Game::specular(glm::vec3 intersection_point, glm::vec3 normal)
+glm::vec4 Game::specular(glm::vec3 intersection_point, int shape_index, int light_index)
 {
 	//TODO:implement
 	//calculates the specular part for every light source
