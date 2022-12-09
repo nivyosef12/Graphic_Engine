@@ -19,9 +19,9 @@ public:
 private:
 	void ray_tracing(std::string &scene_path, int width, int height, unsigned char *data);
     glm::vec3 get_pixel_coordinates(int i, int j);
-    glm::vec4 send_ray_from_pixel(glm::vec3 pixel_coordinates);
+    glm::vec4 send_ray(glm::vec3 origin, glm::vec3 direction);
     void parse_scene(std::string &scene_path);
-    glm::vec3 check_shape_intersection(MyShape shape, glm::vec3 ray);
+    glm::vec3 check_shape_intersection(MyShape shape, glm::vec3 origin, glm::vec3 direction);
     bool check_light_intersection(Light light, glm::vec3 intersection_point);
 	glm::vec4 diffuse(glm::vec3 intersection_point, glm::vec3 normal);
 	glm::vec4 specular(glm::vec3 intersection_point, glm::vec3 normal);

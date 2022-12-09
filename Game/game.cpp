@@ -100,8 +100,9 @@ void Game::ray_tracing(std::string& scene_path, int width, int height, unsigned 
 		for (int j = 0; j < width/4; j++) {
 			
 			glm::vec3 pixel_coordinates = get_pixel_coordinates(i, j);
-			glm::vec4 color = send_ray_from_pixel(pixel_coordinates);
-			
+			glm::vec3 ray_direction = pixel_coordinates - camera;
+			glm::normalize(ray_direction);
+			glm::vec4 color = send_ray(camera, ray_direction);
 			for (int k = 0; k < 4; k++) {
 				data[i*width + j*4 + k] = color[k];
 			}
@@ -123,21 +124,21 @@ glm::vec3 Game::get_pixel_coordinates(int i, int j)
 
 }
 
-glm::vec4 Game::send_ray_from_pixel(glm::vec3 pixel_coordinates)
+glm::vec4 Game::send_ray(glm::vec3 origin, glm::vec3 direction)
 {
-	glm::vec3 ray = pixel_coordinates - camera;
-	glm::normalize(ray);
 	glm::vec3 intersection_point;
 	MyShape* intersecting_shape;
 	for (int i = 0; i < my_shapes.size(); i++) {
-		glm::vec3 new_intersection_point = check_shape_intersection(my_shapes[i], ray);
+		glm::vec3 new_intersection_point = check_shape_intersection(my_shapes[i], origin, direction);
 		if (intersection_point[2] > new_intersection_point[2]) {
 			intersection_point = new_intersection_point;
 			*intersecting_shape = my_shapes[i];
 		}
 	}
 
-	
+	//AFTER BRANCH!!!
+
+
 }
 
 void Game::parse_scene(std::string& scene_path)
@@ -146,7 +147,7 @@ void Game::parse_scene(std::string& scene_path)
 	//parse the scene.txt file
 }
 
-glm::vec3 Game::check_shape_intersection(MyShape shape, glm::vec3 ray)
+glm::vec3 Game::check_shape_intersection(MyShape shape, glm::vec3 origin, glm::vec3 direction)
 {
 	//TODO:implement
 	//check if ray intersects with shape (sphere or plane) and return the coordinates of the
