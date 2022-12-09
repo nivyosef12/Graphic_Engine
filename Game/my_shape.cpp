@@ -9,7 +9,9 @@ MyShape::MyShape(char type, glm::vec4 coordinates)
 
 void MyShape::set_color(glm::vec4 color)
 {
-	this->color = color;
+	glm::vec3 rgb = glm::vec3(color);
+	this->color = glm::vec4(rgb, 0.f);
+	this->shininess = color[3];
 }
 
 
