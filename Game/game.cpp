@@ -6,9 +6,9 @@
 
 
 //global variables:
-std::vector<MyShape> shapes; 
+std::vector<MyShape> my_shapes; 
 std::vector<Light> lights; 
-std::tuple<float,float,float,float> camera;
+glm::vec3 camera;
 int screen_size;
 int width;
 int height;
@@ -125,6 +125,18 @@ glm::vec3 Game::get_pixel_coordinates(int i, int j)
 
 glm::vec4 Game::send_ray_from_pixel(glm::vec3 pixel_coordinates)
 {
+	glm::vec3 ray = pixel_coordinates - camera;
+	glm::normalize(ray);
+	glm::vec3 intersection_point;
+	MyShape* intersecting_shape;
+	for (int i = 0; i < my_shapes.size(); i++) {
+		glm::vec3 new_intersection_point = check_shape_intersection(my_shapes[i], ray);
+		if (intersection_point[2] > new_intersection_point[2]) {
+			intersection_point = new_intersection_point;
+			*intersecting_shape = my_shapes[i];
+		}
+	}
+
 	
 }
 
@@ -134,14 +146,14 @@ void Game::parse_scene(std::string& scene_path)
 	//parse the scene.txt file
 }
 
-glm::vec3 Game::check_shape_intersection(glm::vec4 shape, glm::vec3 ray_origin, glm::vec3 ray_direction)
+glm::vec3 Game::check_shape_intersection(MyShape shape, glm::vec3 ray)
 {
 	//TODO:implement
 	//check if ray intersects with shape (sphere or plane) and return the coordinates of the
 	//closest intersection or None(?) if there is none (maybe nedds to return more things)
 }
 
-bool Game::check_light_intersection(glm::vec4 light, glm::vec3 intersection_point)
+bool Game::check_light_intersection(Light light, glm::vec3 intersection_point)
 {
 	//TODO:implement
 	//check if the intersection_point between the ray and an object meets light (directional or spotlight),
