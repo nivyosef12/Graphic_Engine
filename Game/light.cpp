@@ -4,7 +4,8 @@
 Light::Light(glm::vec4 direction)
 {
 	this->direction = glm::vec3(direction);
-	this->location = glm::vec3(NAN, NAN, NAN);
+	this->location = glm::vec3(INFINITY, INFINITY, INFINITY);
+	this->cos_of_angle = INFINITY;
 }
 
 void Light::set_intensity(glm::vec4 intensity)
