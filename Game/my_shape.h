@@ -10,7 +10,7 @@ public:
 	float shininess;
 
 	MyShape(char type, glm::vec4 coordinates);
-	void set_color(glm::vec4 color);
+	void set_color_and_shininess(glm::vec4 color);
 	//TODO: rule of three?
 	~MyShape(void);
 };

@@ -17,7 +17,7 @@ public:
 	~Game(void);
 
 private:
-	void ray_tracing(std::string &scene_path, int width, int height, unsigned char *data);
+	void ray_tracing(std::string &scene_path, unsigned char *data);
     glm::vec3 get_pixel_coordinates(int i, int j);
     glm::vec4 send_ray(glm::vec3 origin, glm::vec3 direction, int intersecting_shape_index);
     void parse_scene(std::string &scene_path);
