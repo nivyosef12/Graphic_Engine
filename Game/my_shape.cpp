@@ -1,5 +1,4 @@
 #include "my_shape.h"
-#include <glm/gtc/matrix_transform.hpp>
 
 MyShape::MyShape(char type, glm::vec4 coordinates)
 {
