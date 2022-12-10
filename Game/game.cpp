@@ -131,12 +131,12 @@ glm::vec3 Game::get_pixel_coordinates(int i, int j)
 	return pixel_coordinates;
 }
 
-glm::vec4 Game::send_ray(glm::vec3 origin, glm::vec3 direction, int intersecting_shape_index)
+glm::vec4 Game::send_ray(glm::vec3 origin, glm::vec3 direction, int previous_intersecting_shape_index)
 {
 	glm::vec3 intersection_point(INFINITY, INFINITY, INFINITY);
 	int intersecting_shape_index = -1;
 	for (int i = 0; i < my_shapes.size(); i++) {
-		if (i != intersecting_shape_index) {
+		if (i != previous_intersecting_shape_index) {
 			glm::vec3 new_intersection_point = check_shape_intersection(i, origin, direction);
 			if (intersection_point[2] > new_intersection_point[2]) {
 				intersection_point = new_intersection_point;
