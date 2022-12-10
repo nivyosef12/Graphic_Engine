@@ -245,43 +245,6 @@ bool Game::check_light_intersection(int light_index, int intersecting_shape_inde
 		}
 		return true;	
 	}
-
-	// if (light.cos_of_angle == INFINITY) {
-	// 	//light is a directional light
-	// 	glm::vec3 light_intersection_point(INFINITY, INFINITY, INFINITY);
-	// 	for (int i = 0; i < my_shapes.size(); i++) {
-	// 		if (i != intersecting_shape_index) {
-	// 			light_intersection_point = check_shape_intersection(i, intersection_point, light.direction);
-	// 			if (light_intersection_point[0] != INFINITY) {
-	// 				return 0.f;
-	// 			}
-	// 		}
-	// 	}
-	// 	return 1.f;		
-
-	// } else {
-	// 	//light is a spotlight
-	// 	glm::vec3 direction_to_light = light.location - intersection_point;
-	// 	glm::normalize(direction_to_light);
-
-	// 	if (glm::dot(direction_to_light, light.direction) > light.cos_of_angle) {
-	// 		//it means our point is inside the beam of light
-
-	// 		glm::vec3 light_intersection_point(INFINITY, INFINITY, INFINITY);
-	// 		for (int i = 0; i < my_shapes.size(); i++) {
-	// 			if (i != intersecting_shape_index) {
-	// 				light_intersection_point = check_shape_intersection(i, intersection_point, light.direction);
-	// 				if (light_intersection_point[0] != INFINITY) {
-	// 					return 0.f;
-	// 				}
-	// 			}
-	// 		}
-	// 		return 1.f;
-	// 	}
-
-	// 	return 0.f;
-
-	// }
 }
 
 glm::vec4 Game::diffuse(glm::vec3 intersection_point, int shape_index, int light_index)
