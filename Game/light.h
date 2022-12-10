@@ -1,18 +1,19 @@
 #include <tuple>
 #include <string>
+#include <glm/gtc/matrix_transform.hpp>
 
 class Light
 {
-private:
-	glm::vec4 direction;
-	glm::vec4 intensity;
-	glm::vec4 location; //TODO: what to do if it's directional? Can it be None?
-
 public:
+	glm::vec3 direction;
+	glm::vec4 intensity;
+	glm::vec3 location; //if it's directional, location is (NAN,NAN,NAN)
+	float cos_of_angle; //if it's directional, angle is NAN
+
+
 	Light(glm::vec4 direction);
 	void set_intensity(glm::vec4 intensity);
 	void set_location(glm::vec4 location);
-	//TODO: rule of three?
 	~Light(void);
 };
 
