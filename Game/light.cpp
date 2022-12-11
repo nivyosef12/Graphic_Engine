@@ -1,5 +1,4 @@
 #include "light.h"
-#include <glm/gtc/matrix_transform.hpp>
 
 Light::Light(glm::vec4 direction)
 {
