@@ -23,7 +23,7 @@ private:
     void parse_scene(std::string &scene_path);
     std::vector<glm::vec3> check_shape_intersection(int shape_index, glm::vec3 origin, glm::vec3 direction);
     bool check_light_intersection(int light_index, int intersecting_shape_index, glm::vec3 intersection_point);
-	glm::vec4 diffuse(glm::vec3 intersection_point, int shape_index, int light_index);
+	glm::vec4 diffuse(glm::vec3 origin, glm::vec3 intersection_point, int shape_index, int light_index);
 	glm::vec4 specular(glm::vec3 origin, glm::vec3 intersection_point, int shape_index, int light_index);
 	int split(const std::string& txt, std::vector<std::string>& strs, char delimeter);
 
