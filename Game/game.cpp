@@ -145,10 +145,12 @@ glm::vec4 Game::send_ray(glm::vec3 origin, glm::vec3 direction, int previous_int
 {
 	glm::vec3 intersection_point(-INFINITY, -INFINITY, -INFINITY);
 	int intersecting_shape_index = -1;
+	float distance_to_intersection = INFINITY;
 	for (int i = 0; i < my_shapes.size(); i++) {
 		if (i != previous_intersecting_shape_index) {
 			glm::vec3 new_intersection_point = check_shape_intersection(i, origin, direction);
-			if (intersection_point[2] < new_intersection_point[2]) {
+			float new_distance = glm::length(new_intersection_point - origin);
+			if (new_distance < distance_to_intersection) {
 				intersection_point = new_intersection_point;
 				intersecting_shape_index = i;
 			}
@@ -180,7 +182,7 @@ void Game::parse_scene(std::string& scene_path)
 	ambient_light = glm::vec4(0.1, 0.2, 0.3, 1.f);
 
 	MyShape plane = MyShape('o', glm::vec4(0.f, -0.5, -1.f, -3.5));
-	plane.set_color_and_shininess(glm::vec4(0.f, 1.f, 1.f, 0.f));
+	plane.set_color_and_shininess(glm::vec4(0.f, 1.f, 1.f, 10.f));
 	my_shapes.push_back(plane);
 	
 	MyShape sphere = MyShape('o', glm::vec4(-0.7, -0.7, -2.f, 0.5));
@@ -252,10 +254,14 @@ bool Game::check_light_intersection(int light_index, int intersecting_shape_inde
 	if (is_directional_or_intersection_point_is_in_the_spotlight) {
 		glm::vec3 light_intersection_point(-INFINITY, -INFINITY, -INFINITY);
 		for (int i = 0; i < my_shapes.size(); i++) {
-			if (i != intersecting_shape_index && my_shapes[i].coordinates[3] > 0) {
-				light_intersection_point = check_shape_intersection(i, intersection_point, direction_to_light);
-				if (light_intersection_point[0] != -INFINITY) {
-					return false;
+			light_intersection_point = check_shape_intersection(i, intersection_point, direction_to_light);
+			if (light_intersection_point[0] != -INFINITY) {
+				glm::vec3 direction2 = light_intersection_point - intersection_point;
+				if (!glm::equal(direction2, glm::vec3(0.f,0.f,0.f))[0] && !glm::equal(glm::normalize(direction2), direction_to_light)[0] && my_shapes[i].coordinates[3] > 0) {
+					light_intersection_point = check_shape_intersection(i, intersection_point, direction_to_light);
+					if (light_intersection_point[0] != -INFINITY) {
+						return false;
+					}
 				}
 			}
 		}
@@ -280,7 +286,14 @@ glm::vec4 Game::diffuse(glm::vec3 intersection_point, int shape_index, int light
 		//light is a spotlight
 		Li = glm::normalize(light.location - intersection_point);
 	}
-	diffuse_color += shape.color * glm::dot(N, Li) * light.intensity;
+
+	glm::vec4 shape_color = shape.color;
+	if (shape.coordinates[3] < 0) {
+		glm::vec2 x_y = shape.get_x_y(intersection_point);
+		if ((int)(3 * x_y[0]) % 2 == (int)(3 * x_y[1]) % 2)
+			shape_color *= 0.5;
+	}
+	diffuse_color += shape_color * glm::dot(N, Li) * light.intensity;
 
 	return diffuse_color;
 }
@@ -300,7 +313,7 @@ glm::vec4 Game::specular(glm::vec3 origin, glm::vec3 intersection_point, int sha
 	glm::vec3 direction_from_light = light.direction;
 	if (light.cos_of_angle != INFINITY) {
 		//light is a spotlight
-		direction_from_light = glm::normalize(intersection_point - light.location);
+		direction_from_light = glm::normalize(light.location - intersection_point);
 	}
 
 	glm::vec3 V = glm::normalize(intersection_point - origin);
