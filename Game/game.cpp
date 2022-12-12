@@ -294,13 +294,7 @@ glm::vec4 Game::diffuse(glm::vec3 origin, glm::vec3 intersection_point, int shap
 		//shape is a sphere
 		glm::vec3 O = glm::vec3(shape.coordinates);
 		N = glm::normalize(intersection_point - O);
-	} else {
-		glm::vec3 V = glm::normalize(intersection_point - origin);
-		float NdotV = glm::dot(N, V);
-		if (NdotV > 0) {
-			N *= -1.f;
-		}
-	}
+	} 
 	else {
 		if (glm::dot(N, (intersection_point - origin)) > 0)
 			N = N * -1.f;
@@ -335,12 +329,7 @@ glm::vec4 Game::specular(glm::vec3 origin, glm::vec3 intersection_point, int sha
 		//shape is a sphere
 		glm::vec3 O = glm::vec3(shape.coordinates);
 		N = glm::normalize(intersection_point - O);
-	} else {
-		float NdotminusV = glm::dot(N, -V);
-		if (NdotminusV > 0) {
-			N *= -1.f;
-		}
-	}
+	} 
 	else {
 		if (glm::dot(N, (intersection_point - origin)) > 0)
 			N = N * -1.f;
