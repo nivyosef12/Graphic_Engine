@@ -181,7 +181,6 @@ glm::vec4 Game::send_ray(glm::vec3 origin, glm::vec3 direction, int previous_int
 	return color*255.f;
 }
 
-
 std::vector<glm::vec3> Game::check_shape_intersection(int shape_index, glm::vec3 origin, glm::vec3 direction)
 {
 	MyShape shape = my_shapes[shape_index];
@@ -318,7 +317,14 @@ glm::vec4 Game::diffuse(glm::vec3 intersection_point, int shape_index, int light
 		//light is a spotlight
 		Li = glm::normalize(light.location - intersection_point);
 	}
-	diffuse_color += shape.color * glm::dot(N, Li) * light.intensity;
+
+	glm::vec4 shape_color = shape.color;
+	if (shape.coordinates[3] < 0) {
+		glm::vec2 x_y = shape.get_x_y(intersection_point);
+		if ((int)(3 * x_y[0]) % 2 == (int)(3 * x_y[1]) % 2)
+			shape_color *= 0.5;
+	}
+	diffuse_color += shape_color * glm::dot(N, Li) * light.intensity;
 
 	return diffuse_color;
 }
