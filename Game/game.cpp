@@ -57,7 +57,7 @@ void Game::Init()
 	for (int i = 0; i < DATASIZE; i++)
 		data[0] = 0;
 
-	std::string path = "../res/scenes/scene3.txt";
+	std::string path = "../res/scenes/scene4.txt";
 	ray_tracing(path, data);
 	AddTexture(WIDTH, HEIGHT, data);
 
@@ -338,8 +338,14 @@ glm::vec4 Game::diffuse(glm::vec3 origin, glm::vec3 intersection_point, int shap
 	//diffuse_color += shape.color * std::max(0.f, glm::dot(N, Li)) * light.intensity;
 	glm::vec4 shape_color = shape.color;
 	if (shape.coordinates[3] < 0) {
-		glm::vec2 x_y = shape.get_x_y(intersection_point);
-		if ((int)(3 * x_y[0]) % 2 == (int)(3 * x_y[1]) % 2)
+		bool cond = (int)(1.5 * std::abs(intersection_point[0])) % 2 == (int)(1.5 * std::abs(intersection_point[1])) % 2;
+		if (intersection_point[0] < 0)
+			cond = !cond;
+
+		if (intersection_point[1] < 0)
+			cond = !cond;
+
+		if (cond)
 			shape_color *= 0.5;
 	}
 	diffuse_color += shape_color * std::max(0.f, glm::dot(N, Li)) * light.intensity;
