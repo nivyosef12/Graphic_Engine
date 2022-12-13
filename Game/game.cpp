@@ -7,7 +7,8 @@
 
 
 //constants:
-glm::vec4 SPECULARVALUE(0.7, 0.7, 0.7, 0.f); 
+glm::vec4 SPECULARVALUE(0.7, 0.7, 0.7, 0.f);
+int MAXDEPTH = 5; 
 
 //global variables:
 std::vector<MyShape> my_shapes; 
@@ -57,7 +58,7 @@ void Game::Init()
 	for (int i = 0; i < DATASIZE; i++)
 		data[0] = 0;
 
-	std::string path = "../res/scenes/scene4.txt";
+	std::string path = "../res/scenes/scene3.txt";
 	ray_tracing(path, data);
 	AddTexture(WIDTH, HEIGHT, data);
 
@@ -116,7 +117,7 @@ void Game::ray_tracing(std::string& scene_path, unsigned char* data)
 			
 			glm::vec3 pixel_coordinates = get_pixel_coordinates(i, j);
 			glm::vec3 ray_direction = glm::normalize(pixel_coordinates - camera);
-			glm::vec4 color = send_ray(camera, ray_direction, -1);
+			glm::vec4 color = send_ray(camera, ray_direction, -1, 0);
 
 			for (int k = 0; k < 4; k++) {
 				data[i*(int)WIDTH*4 + j*4 + k] = color[k];
@@ -138,14 +139,18 @@ glm::vec3 Game::get_pixel_coordinates(int i, int j)
 	return pixel_coordinates;
 }
 
-glm::vec4 Game::send_ray(glm::vec3 origin, glm::vec3 direction, int previous_intersecting_shape_index)
-{
+glm::vec4 Game::send_ray(glm::vec3 origin, glm::vec3 direction, int previous_intersecting_shape_index, int num_of_call)
+{	
+	if (num_of_call == MAXDEPTH)
+		return glm::vec4(0.f, 0.f, 0.f, 0.f);
+	
 	glm::vec3 intersection_point(-INFINITY, -INFINITY, -INFINITY);
 	int intersecting_shape_index = -1;
 	float dist_to_intersection = INFINITY;
+	// printf("before for\n");
 	for (int i = 0; i < my_shapes.size(); i++) {
 		if (i != previous_intersecting_shape_index) {
-			glm::vec3 new_intersection_point = check_shape_intersection(i, origin, direction)[0];
+			glm::vec3 new_intersection_point = check_shape_intersection(i, origin, direction, 0)[0];
 
 			float new_dist = glm::length(new_intersection_point - origin);
 			if (new_dist < dist_to_intersection) {
@@ -156,30 +161,56 @@ glm::vec4 Game::send_ray(glm::vec3 origin, glm::vec3 direction, int previous_int
 		}
 	}
 
+	// printf("after for\n");
+	// printf("before if\n");
 	glm::vec4 color(0.f, 0.f, 0.f, 0.f);
+	if (intersecting_shape_index != -1 && num_of_call < 5) {
+		// printf("%f, %f, %f  num of call %i\n", intersection_point[0], intersection_point[1], intersection_point[2], num_of_call);
+		MyShape shape = my_shapes[intersecting_shape_index];
+		if (shape.o_r_t == "r") {
+			// printf("num of call %i\n", num_of_call);
+			// printf("before reflect\n");
+			glm::vec3 R = glm::reflect(direction, shape.get_normal(intersection_point));
+			// printf("R %f,%f,%f\n", R[0], R[1], R[2]);
+			// printf("after reflect\n");
+			return color += SPECULARVALUE * send_ray(intersection_point, R, intersecting_shape_index, num_of_call + 1);
+		}
+	}
+	// printf("after if\n");
+
+	// printf("before if\n");
 	if (intersecting_shape_index != -1) {
 		MyShape shape = my_shapes[intersecting_shape_index];
 
 		for (int i = 0; i < lights.size(); i++) {
+			// printf("before light\n");
 			if (check_light_intersection(i, intersecting_shape_index, intersection_point)) {
+				// printf("before diffuse\n");
 				color += diffuse(origin, intersection_point, intersecting_shape_index, i);
+				// printf("after diffuse before specular\n");
+				// printf("origin %f,%f,%f  intersection_point %f,%f,%f  shape_index %i, light_index %i\n", origin[0], origin[1], origin[2], intersection_point[0], intersection_point[1], intersection_point[2], intersecting_shape_index, i);
 				color += specular(origin, intersection_point, intersecting_shape_index, i);
+				// printf("after specular\n");
 			}
+			// printf("after light\n");
 		}
 
 		color /= (float)lights.size();
 		color += shape.color * ambient_light;
 	}
+	// printf("after if\n");
 
 	return color*255.f;
 }
 
-std::vector<glm::vec3> Game::check_shape_intersection(int shape_index, glm::vec3 origin, glm::vec3 direction)
+std::vector<glm::vec3> Game::check_shape_intersection(int shape_index, glm::vec3 origin, glm::vec3 direction, int num_of_call)
 {
+		// printf("num_of_call %i\n", num_of_call);
 	MyShape shape = my_shapes[shape_index];
 	glm::vec3 intersection_point1(-INFINITY, -INFINITY, -INFINITY);
 	glm::vec3 intersection_point2(-INFINITY, -INFINITY, -INFINITY);
 	std::vector<glm::vec3> intersection_points;
+	glm::vec3 N;
 
 	if (shape.coordinates[3] > 0) {
 		//shape is a sphere:
@@ -201,32 +232,47 @@ std::vector<glm::vec3> Game::check_shape_intersection(int shape_index, glm::vec3
 			float dist1 = glm::length(origin - intersection_point1);
 			float dist2 = glm::length(origin - intersection_point2);
 
-			if (dist1 < dist2) {
-				intersection_points.push_back(intersection_point1);
-				intersection_points.push_back(intersection_point2);
-			}
-			else {
-				intersection_points.push_back(intersection_point2);
-				intersection_points.push_back(intersection_point1);
+			if (dist1 > dist2) {
+				glm::vec3 tmp = intersection_point2;
+				intersection_point2 = intersection_point1;
+				intersection_point1 = tmp;
 			}
 
-			return intersection_points;
+			N = glm::normalize(intersection_point1 - O);			
 		}
 	} else {
 		//shape is a plane:
-		glm::vec3 p_n = glm::normalize(glm::vec3(shape.coordinates));
-		if (glm::dot(p_n, direction) < 0)
-			p_n = p_n * -1.f;
-		float p_n_dot_r_d = glm::dot(p_n, direction);
-		if (p_n_dot_r_d > 0) {
-			float v0 = -((glm::dot(p_n, origin)) + shape.coordinates[3]);
-			float t = v0 / p_n_dot_r_d;
+		N = glm::normalize(glm::vec3(shape.coordinates));
+		if (glm::dot(N, direction) < 0)
+			N = N * -1.f;
+		float N_dot_r_d = glm::dot(N, direction);
+		if (N_dot_r_d > 0) {
+			float v0 = -((glm::dot(N, origin)) + shape.coordinates[3]);
+			float t = v0 / N_dot_r_d;
 			if (t >= 0)
 				intersection_point1 = origin + t * direction;
 		}
 	}
 	intersection_points.push_back(intersection_point1);
 	intersection_points.push_back(intersection_point2);
+	
+	// if (intersection_points[0][0] != -INFINITY && num_of_call < 5 && shape.o_r_t == "r") {
+	// 	std::vector<glm::vec3> new_intersection_points;
+	// 	int intersecting_shape_index = -1;
+	// 	float dist_to_intersection = INFINITY;
+	// 	for (int i = 0; i < my_shapes.size(); i++) {
+	// 		if (i != shape_index) {
+	// 			new_intersection_points = check_shape_intersection(i, intersection_points[0], glm::reflect(direction, N), num_of_call + 1);
+
+	// 			float new_dist = glm::length(new_intersection_points[0] - origin);
+	// 			if (new_dist < dist_to_intersection) {
+	// 				intersection_points = new_intersection_points;
+	// 				intersecting_shape_index = i;
+	// 				dist_to_intersection = new_dist;
+	// 			}
+	// 		}
+	// 	}
+	// }
 	return intersection_points;
 }
 
@@ -249,7 +295,7 @@ bool Game::check_light_intersection(int light_index, int intersecting_shape_inde
 		for (int i = 0; i < my_shapes.size(); i++) {
 			if (i != intersecting_shape_index && my_shapes[i].coordinates[3] > 0) {
 				// fursther intersection point
-				std::vector<glm::vec3> light_intersection_points = check_shape_intersection(i, intersection_point, -direction_from_light);
+				std::vector<glm::vec3> light_intersection_points = check_shape_intersection(i, intersection_point, -direction_from_light, 0);
 				if (light_intersection_points[0][0] != -INFINITY) {
 					glm::vec3 V = glm::normalize(intersection_point - light_intersection_points[0]);
 					if (glm::dot(V, direction_from_light) > 0)
@@ -309,6 +355,10 @@ glm::vec4 Game::diffuse(glm::vec3 origin, glm::vec3 intersection_point, int shap
 
 glm::vec4 Game::specular(glm::vec3 origin, glm::vec3 intersection_point, int shape_index, int light_index)
 {
+	if (glm::length(origin - intersection_point) == 0) {
+		return glm::vec4(0.f, 0.f, 0.f, 0.f);
+	}
+	
 	MyShape shape = my_shapes[shape_index];
 	glm::vec3 N = glm::normalize(glm::vec3(shape.coordinates));
 	glm::vec4 specular_color(0.f, 0.f, 0.f, 0.f);
@@ -317,7 +367,6 @@ glm::vec4 Game::specular(glm::vec3 origin, glm::vec3 intersection_point, int sha
 		glm::vec3 O = glm::vec3(shape.coordinates);
 		N = glm::normalize(intersection_point - O);
 	}
-
 	else {
 		if (glm::dot(N, (intersection_point - origin)) > 0)
 			N = N * -1.f;

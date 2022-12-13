@@ -13,6 +13,7 @@ public:
 
 	MyShape(std::string type, glm::vec4 coordinates);
 	void set_color_and_shininess(glm::vec4 color);
+	glm::vec3 get_normal(glm::vec3 intersection_point);
 	~MyShape(void);
 };
 
