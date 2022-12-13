@@ -287,16 +287,21 @@ bool Game::check_light_intersection(int light_index, int intersecting_shape_inde
 	}
 
 	if (is_directional_or_intersection_point_is_in_the_spotlight) {
-		glm::vec3 light_intersection_point(-INFINITY, -INFINITY, -INFINITY);
 		for (int i = 0; i < my_shapes.size(); i++) {
 			if (i != intersecting_shape_index && my_shapes[i].coordinates[3] > 0) {
 				// fursther intersection point
-				light_intersection_point = check_shape_intersection(i, intersection_point, -direction_from_light)[0];
-
-				if (light_intersection_point[0] != -INFINITY) {
-
-					return false;
+				std::vector<glm::vec3> light_intersection_points = check_shape_intersection(i, intersection_point, -direction_from_light);
+				if (light_intersection_points[0][0] != -INFINITY) {
+					glm::vec3 V = glm::normalize(intersection_point - light_intersection_points[0]);
+					if (glm::dot(V, direction_from_light) > 0)
+						return false;
 				}
+				if (light_intersection_points[1][0] != -INFINITY) {
+					glm::vec3 V = glm::normalize(intersection_point - light_intersection_points[1]);
+					if (glm::dot(V, direction_from_light) > 0)
+						return false;
+				}
+
 			}
 			//else if (i == intersecting_shape_index && my_shapes[i].coordinates[3] > 0) {
 			//	// fursther intersection point
