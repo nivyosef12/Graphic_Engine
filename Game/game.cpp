@@ -363,6 +363,7 @@ glm::vec4 Game::specular(glm::vec3 origin, glm::vec3 intersection_point, int sha
 		glm::vec3 O = glm::vec3(shape.coordinates);
 		N = glm::normalize(intersection_point - O);
 	}
+
 	else {
 		if (glm::dot(N, (intersection_point - origin)) > 0)
 			N = N * -1.f;
