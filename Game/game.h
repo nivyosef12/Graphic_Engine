@@ -18,6 +18,7 @@ public:
 
 private:
 	void ray_tracing(std::string &scene_path, unsigned char *data);
+    std::vector<glm::vec3> anti_aliasing(int i, int j);
     glm::vec3 get_pixel_coordinates(int i, int j);
     glm::vec4 send_ray(glm::vec3 origin, glm::vec3 direction, int previous_intersecting_shape_index, int num_of_call);
     void parse_scene(std::string &scene_path);

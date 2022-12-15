@@ -9,6 +9,8 @@
 //constants:
 glm::vec4 SPECULARVALUE(0.7, 0.7, 0.7, 0.f);
 int MAXDEPTH = 5; 
+float RESOLUTION = 256.f;
+
 
 //global variables:
 std::vector<MyShape> my_shapes; 
@@ -47,8 +49,8 @@ void Game::Init()
 	AddShader("../res/shaders/pickingShader");	
 	AddShader("../res/shaders/basicShader");
 	
-	WIDTH = 256.f;
-	HEIGHT = 256.f;
+	WIDTH = RESOLUTION;
+	HEIGHT = RESOLUTION;
 	PIXELHEIGHT = 2.f / HEIGHT;
 	PIXELWIDTH = 2.f / WIDTH;
 	NUMOFCOLORS = 4;
@@ -58,7 +60,7 @@ void Game::Init()
 	for (int i = 0; i < DATASIZE; i++)
 		data[0] = 0;
 
-	std::string path = "../res/scenes/scene.txt";
+	std::string path = "../res/scenes/scene4.txt";
 	ray_tracing(path, data);
 	AddTexture(WIDTH, HEIGHT, data);
 
@@ -112,28 +114,62 @@ Game::~Game(void)
 void Game::ray_tracing(std::string& scene_path, unsigned char* data)
 {
 	parse_scene(scene_path);
+
+	glm::vec4 color = glm::vec4(0.f, 0.f, 0.f, 0.f);
 	for (int i = 0; i < HEIGHT; i++) {
 		for (int j = 0; j < WIDTH; j++) {
 			
-			glm::vec3 pixel_coordinates = get_pixel_coordinates(i, j);
-			glm::vec3 ray_direction = glm::normalize(pixel_coordinates - camera);
-			glm::vec4 color = send_ray(camera, ray_direction, -1, 0);
+			std::vector<glm::vec3> pixel_coordinates = anti_aliasing(i, j);
+			for (int k = 0; k < pixel_coordinates.size(); k++) {
+				glm::vec3 ray_direction = glm::normalize(pixel_coordinates[k] - camera);
+				color += send_ray(camera, ray_direction, -1, 0);
+			}
+			color /= ((float)pixel_coordinates.size() + 1.f);
 
 			for (int k = 0; k < 4; k++) {
 				data[i*(int)WIDTH*4 + j*4 + k] = color[k];
 			}
 		}
 	}
+}
+
+std::vector<glm::vec3> Game::anti_aliasing(int i, int j)
+{
+	float top_left_corner_of_pixel_y = (((float)i / HEIGHT) * 2.f - 1.f) * -1.f;
+	float top_left_corner_of_pixel_x = ((float)j / (WIDTH)) * 2.f - 1.f;
+
+	std::vector<glm::vec3> pixel_coordinates;
+
+	float pixel_y = top_left_corner_of_pixel_y - PIXELHEIGHT/3.f;
+	float pixel_x = top_left_corner_of_pixel_x + PIXELWIDTH/3.f;
+	glm::vec3 coordinates(pixel_x, pixel_y, 0.f);
+	pixel_coordinates.push_back(coordinates);
+
+	pixel_y = top_left_corner_of_pixel_y - 2.f*PIXELHEIGHT/3.f;
+	pixel_x = top_left_corner_of_pixel_x + PIXELWIDTH/3.f;
+	coordinates = glm::vec3(pixel_x, pixel_y, 0.f);
+	pixel_coordinates.push_back(coordinates);
+
+	pixel_y = top_left_corner_of_pixel_y - PIXELHEIGHT/3.f;
+	pixel_x = top_left_corner_of_pixel_x + 2.f*PIXELWIDTH/3.f;
+	coordinates = glm::vec3(pixel_x, pixel_y, 0.f);
+	pixel_coordinates.push_back(coordinates);
+
+	pixel_y = top_left_corner_of_pixel_y - 2.f*PIXELHEIGHT/3.f;
+	pixel_x = top_left_corner_of_pixel_x + 2.f*PIXELWIDTH/3.f;
+	coordinates = glm::vec3(pixel_x, pixel_y, 0.f);
+	pixel_coordinates.push_back(coordinates);
 	
+	return pixel_coordinates;
 }
 
 glm::vec3 Game::get_pixel_coordinates(int i, int j)
 {
-	float top_left_corner_of_pixel_y = ((i / HEIGHT) * 2 - 1) * -1;
-	float top_left_corner_of_pixel_x = (j / (WIDTH)) * 2 - 1;
+	float top_left_corner_of_pixel_y = (((float)i / HEIGHT) * 2.f - 1.f) * -1.f;
+	float top_left_corner_of_pixel_x = ((float)j / (WIDTH)) * 2.f - 1.f;
 
-	float center_of_pixel_y = top_left_corner_of_pixel_y - PIXELHEIGHT/2;
-	float center_of_pixel_x = top_left_corner_of_pixel_x + PIXELWIDTH/2;
+	float center_of_pixel_y = top_left_corner_of_pixel_y - PIXELHEIGHT/2.f;
+	float center_of_pixel_x = top_left_corner_of_pixel_x + PIXELWIDTH/2.f;
 
 	glm::vec3 pixel_coordinates(center_of_pixel_x, center_of_pixel_y, 0.f);
 	return pixel_coordinates;
