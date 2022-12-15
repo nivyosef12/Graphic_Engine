@@ -6,7 +6,7 @@
 #include "light.h"
 
 
-//constants:
+//constant parameters:
 glm::vec4 SPECULARVALUE(0.7, 0.7, 0.7, 0.f);
 int MAXDEPTH = 5; 
 float RESOLUTION = 256.f;
