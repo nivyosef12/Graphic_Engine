@@ -2,14 +2,20 @@
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
 
+using namespace std;
+
+//parameters:
+int RUBIKS_CUBE_SIZE = 3;
+int CUBE_SIZE = 3;
+
 static void printMat(const glm::mat4 mat)
 {
-	std::cout<<" matrix:"<<std::endl;
+	cout<<" matrix:"<<endl;
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)
-			std::cout<< mat[j][i]<<" ";
-		std::cout<<std::endl;
+			cout<< mat[j][i]<<" ";
+		cout<<endl;
 	}
 }
 
@@ -24,18 +30,48 @@ Game::Game(float angle ,float relationWH, float near1, float far1) : Scene(angle
 void Game::Init()
 {		
 
+
 	AddShader("../res/shaders/pickingShader");	
 	AddShader("../res/shaders/basicShader");
 	
-	AddTexture("../res/textures/box0.bmp",false);
+	AddTexture("../res/textures/plane.png",false);
 
-	AddShape(Plane,-1,TRIANGLES);
+	vector<Shape*> line(RUBIKS_CUBE_SIZE);
+	vector<vector<Shape*>> face(RUBIKS_CUBE_SIZE, line);
+	vector<vector<vector<Shape*>>> cube(RUBIKS_CUBE_SIZE, face);
+
+	int shape_indx = 0;
+	for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
+		for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
+			for (int k = 0; k < RUBIKS_CUBE_SIZE; k++) {
+				if (i == 0 && j == 0 && k == 0) {
+					AddShape(Cube, -1, TRIANGLES);
+					SetShapeTex(0, 0);
+				} else {
+					AddShapeCopy(0, -1, TRIANGLES);
+				}
+				/*printf("i: %i, j: %i, k: %i\n", i, j, k);
+				printf("shape index: %i\n", shape_indx);*/
+				cube[k][j][i] = shapes[shape_indx];
+				shapes[shape_indx]->MyTranslate(glm::vec3(k*CUBE_SIZE, j*CUBE_SIZE, -i*CUBE_SIZE), 0);
+
+				shape_indx++;
+			}
+		}
+	}
 	
 	pickedShape = 0;
 	
-	SetShapeTex(0,0);
-	MoveCamera(0,zTranslate,10);
+	MoveCamera(0,zTranslate,40);
+	MoveCamera(0,xTranslate,10);
+
 	pickedShape = -1;
+
+	// shapes[0]->MyScale(glm::vec3(1.5, 1.5, 1.5));
+	// shapes[0]->MyTranslate(glm::vec3(0.0, 2.0, 0.0), 0);
+	cube[1][1][0]->MyRotate(90, glm::vec3(0.0, 1.0, 0.0), 0);
+	cube[1][1][0]->MyRotate(90, glm::vec3(0.0, 1.0, 0.0), 0);
+
 	
 	//ReadPixel(); //uncomment when you are reading from the z-buffer
 }
