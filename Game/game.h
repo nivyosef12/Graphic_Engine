@@ -19,6 +19,7 @@ public:
 	static void my_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	void rotate_cube(float angle, glm::vec3 axis);
 	vector<vector<vector<Shape*>>> make_cube();
+	void rotate_face(float angle, glm::vec3 axis, int index);
 	~Game(void);
 
 private:

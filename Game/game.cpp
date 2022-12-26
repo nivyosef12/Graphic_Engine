@@ -9,10 +9,10 @@ using namespace std;
 const double pi = 3.14159265358979323846;
 
 //parameters:
-float RUBIKS_CUBE_SIZE = 5.f;
-float CUBE_SIZE = 3.f;
+float RUBIKS_CUBE_SIZE = 3.f;
+float CUBE_SIZE = 4.f;
 // static vector<vector<vector<Shape*>>> rubicks_cube;
-float ROTATION_ANGLE = pi / 4;
+float ROTATION_ANGLE = 90;
 glm::mat4 cube_center_trans(1);
 glm::mat4 cube_center_rot(1);
 glm::mat4 cube_center_scl(1); 
@@ -38,7 +38,6 @@ Game::Game(float angle ,float relationWH, float near1, float far1) : Scene(angle
 
 void Game::Init()
 {		
-
 
 	AddShader("../res/shaders/pickingShader");	
 	AddShader("../res/shaders/basicShader");
@@ -133,26 +132,50 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 		switch (key)
 		{			
 			case GLFW_KEY_UP:
-				// scn->rubicks_cube[0][0][0]->MyRotate(-45, glm::vec3(1, 0, 0), 0);
-				scn->rotate_cube(-45, glm::vec3(1, 0, 0)); 
+				scn->rubicks_cube[2][2][0]->MyRotate(-ROTATION_ANGLE, glm::vec3(1, 0, 0), 0);
+				// scn->rotate_cube(-ROTATION_ANGLE, glm::vec3(1, 0, 0)); 
 				//rotate 45 deg counter-clockwise around the "real world's" x-axis
 				break;
 		
 			case GLFW_KEY_DOWN:
-				// scn->rubicks_cube[0][0][0]->MyRotate(45, glm::vec3(1, 0, 0), 0);
-				scn->rotate_cube(45, glm::vec3(1, 0, 0)); 
+				scn->rubicks_cube[2][2][0]->MyRotate(ROTATION_ANGLE, glm::vec3(1, 0, 0), 0);
+				// scn->rotate_cube(ROTATION_ANGLE, glm::vec3(1, 0, 0)); 
 				//rotate 45 deg clockwise around the "real world's" x-axis
 				break;
 			
 			case GLFW_KEY_RIGHT:
-				scn->rotate_cube(45, glm::vec3(0, 1, 0)); 
+				// scn->rubicks_cube[2][2][0]->MyRotate(ROTATION_ANGLE, glm::vec3(0, 1, 0), 0);
+				scn->rotate_cube(ROTATION_ANGLE, glm::vec3(0, 1, 0)); 
 				//rotate 45 deg clockwise around the "real world's" y-axis
 				break;
 
 			case GLFW_KEY_LEFT:
-				scn->rotate_cube(-45, glm::vec3(0, 1, 0)); 
+				// scn->rubicks_cube[2][2][0]->MyRotate(-ROTATION_ANGLE, glm::vec3(0, 1, 0), 0);
+				scn->rotate_cube(-ROTATION_ANGLE, glm::vec3(0, 1, 0)); 
 				//rotate 45 deg counter-clockwise around the "real world's" y-axis
 				break;
+
+			case GLFW_KEY_X:
+				// scn->rubicks_cube[2][2][0]->MyRotate(ROTATION_ANGLE, glm::vec3(0, 1, 0), 0);
+				scn->rotate_cube(-ROTATION_ANGLE, glm::vec3(0, 0, 1)); 
+				//rotate 45 deg clockwise around the "real world's" y-axis
+				break;
+
+			case GLFW_KEY_Z:
+				// scn->rubicks_cube[2][2][0]->MyRotate(ROTATION_ANGLE, glm::vec3(0, 1, 0), 0);
+				scn->rotate_cube(ROTATION_ANGLE, glm::vec3(0, 0, 1)); 
+				//rotate 45 deg clockwise around the "real world's" y-axis
+				break;
+			case GLFW_KEY_F:
+				scn->rotate_face(ROTATION_ANGLE, glm::vec3(1, 0, 0), 0);
+				break;
+			case GLFW_KEY_G:
+				scn->rotate_face(ROTATION_ANGLE, glm::vec3(1, 0, 0), 1);
+				break;
+			case GLFW_KEY_H:
+				scn->rotate_face(ROTATION_ANGLE, glm::vec3(1, 0, 0), 2);
+				break;
+			
 
 		default:
 			break;
@@ -182,67 +205,118 @@ void Game::rotate_cube(float angle, glm::vec3 axis)
 		}
 	}
 
-	// //if a full 90 deg turn has been completed, switch the faces
-	// vector<vector<vector<Shape*>>> new_rubicks_cube = make_cube();
-	// if (true) {
-	// 	char rotation_axis = 'z';
-	// 	if (glm::all(glm::equal(axis, glm::vec3(1, 0, 0)))) {
-	// 		rotation_axis = 'x';
-	// 	} else if (glm::all(glm::equal(axis, glm::vec3(0, 1, 0)))) {
-	// 		rotation_axis = 'y';
-	// 	}
+	//if a full 90 deg turn has been completed, switch the faces
+	vector<vector<vector<Shape*>>> new_rubicks_cube = make_cube();
+	if (true) {
+		char rotation_axis = 'z';
+		if (glm::all(glm::equal(axis, glm::vec3(1, 0, 0)))) {
+			rotation_axis = 'x';
+		} else if (glm::all(glm::equal(axis, glm::vec3(0, 1, 0)))) {
+			rotation_axis = 'y';
+		}
 
-	// 	int num_of_rotations = 1;
-	// 	if (angle > 0)
-	// 		num_of_rotations = 3;
+		for (int z = 0; z < RUBIKS_CUBE_SIZE; z++) {
+			for (int y = 0; y < RUBIKS_CUBE_SIZE; y++) {
+				for (int x = 0; x < RUBIKS_CUBE_SIZE; x++) {
+					Shape* cube = rubicks_cube[x][y][z];
+
+					if (rotation_axis == 'x' && (z == 0 || z == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1)) {
+						if (angle < 0)
+							new_rubicks_cube[x][RUBIKS_CUBE_SIZE-1 - z][y] = cube;
+						else
+							new_rubicks_cube[x][z][RUBIKS_CUBE_SIZE-1 - y] = cube;
+
+					} else if (rotation_axis == 'y' && (z == 0 || z == RUBIKS_CUBE_SIZE-1 || x == 0 || x == RUBIKS_CUBE_SIZE-1)) {
+						if (angle > 0)
+							new_rubicks_cube[RUBIKS_CUBE_SIZE-1 - z][y][x] = cube;
+						else 
+							new_rubicks_cube[z][y][RUBIKS_CUBE_SIZE-1 - x] = cube;
+
+					} else  if (rotation_axis == 'z' && (x == 0 || x == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1)) {
+						if (angle < 0)
+							new_rubicks_cube[RUBIKS_CUBE_SIZE-1 - y][x][z] = cube;
+						else
+							new_rubicks_cube[y][RUBIKS_CUBE_SIZE-1 - x][z] = cube;
+
+					} else {
+						new_rubicks_cube[x][y][z] = cube;
+					}
+				}
+			}
+		}
 		
-	// 	for (int z = 0; z < RUBIKS_CUBE_SIZE; z++) {
-	// 		for (int y = 0; y < RUBIKS_CUBE_SIZE; y++) {
-	// 			for (int x = 0; x < RUBIKS_CUBE_SIZE; x++) {
-	// 				Shape* cube = rubicks_cube[x][y][z];
-
-	// 				for (int i = 0; i < num_of_rotations; i++) { // if rotating clockwise, rotate counter-clockwise 3 times	
-	// 					if (rotation_axis == 'x' && (z == 0 || z == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1)) {
-	// 						new_rubicks_cube[x][RUBIKS_CUBE_SIZE - z][y] = cube;
-							
-	// 						// if (z == 0 || z == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1) {
-	// 						// 	new_rubicks_cube[x][RUBIKS_CUBE_SIZE - z][y] = cube;
-	// 						// } else {
-	// 						// 	new_rubicks_cube[x][y][z] = cube;
-	// 						// }
-	// 					} else if (rotation_axis == 'y' && (z == 0 || z == RUBIKS_CUBE_SIZE-1 || x == 0 || x == RUBIKS_CUBE_SIZE-1)) {
-	// 						new_rubicks_cube[RUBIKS_CUBE_SIZE - z][y][x] = cube;
-							
-	// 						// if (z == 0 || z == RUBIKS_CUBE_SIZE-1 || x == 0 || x == RUBIKS_CUBE_SIZE-1) {
-	// 						// 	new_rubicks_cube[RUBIKS_CUBE_SIZE - z][y][x] = cube;
-	// 						// } else {
-	// 						// 	new_rubicks_cube[x][y][z] = cube;
-	// 						// }
-	// 					} else  if (rotation_axis == 'z' && (x == 0 || x == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1)) {
-	// 						new_rubicks_cube[RUBIKS_CUBE_SIZE - y][x][z] = cube;
-
-	// 						// if (x == 0 || x == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1) {
-	// 						// 	new_rubicks_cube[RUBIKS_CUBE_SIZE - y][x][z] = cube;
-	// 						// } else {
-	// 						// 	new_rubicks_cube[x][y][z] = cube;
-	// 						// }
-	// 					} else {
-	// 						new_rubicks_cube[x][y][z] = cube;
-	// 					}
-	// 				}			
-	// 			}
-	// 		}
-	// 	}
-	// }
+		rubicks_cube = new_rubicks_cube;
+	}
 }
 
 vector<vector<vector<Shape*>>> Game::make_cube()
 {
 	vector<Shape*> line(RUBIKS_CUBE_SIZE);
 	vector<vector<Shape*>> face(RUBIKS_CUBE_SIZE, line);
-	rubicks_cube = vector<vector<vector<Shape*>>>(RUBIKS_CUBE_SIZE, face);
+	vector<vector<vector<Shape*>>> cube(RUBIKS_CUBE_SIZE, face);
 
-	return rubicks_cube;
+	return cube;
+}
+
+void Game::rotate_face(float angle, glm::vec3 axis, int index)
+{
+	char rotation_axis = 'z';
+	if (glm::all(glm::equal(axis, glm::vec3(1, 0, 0)))) {
+		rotation_axis = 'x';
+	} else if (glm::all(glm::equal(axis, glm::vec3(0, 1, 0)))) {
+		rotation_axis = 'y';
+	}
+	
+	for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
+		for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
+			Shape* cube = rubicks_cube[i][j][index];
+			if (rotation_axis == 'x')
+				cube = rubicks_cube[index][i][j];
+			else if (rotation_axis == 'y')
+				cube = rubicks_cube[i][index][j];
+						
+			glm::mat4 previous_trans = cube->get_trans();
+			glm::mat4 trans_mat1 = cube_center_trans - previous_trans; 
+			glm::vec3 trans_vec1(trans_mat1[3][0], trans_mat1[3][1], trans_mat1[3][2]); //the translation matrix from the cube's position to the center of the rubick's cube
+			cube->MyTranslate(trans_vec1, 0); //translate to the center of the rubick's cube
+
+			glm::vec4 real_axis = glm::inverse(cube->get_rot()) * glm::vec4(axis, 1); //rotate the "real" x-axis by the opposite of the rotations that the cube did, this is the real x-axis as the cube sees it
+			cube->MyRotate(angle, glm::vec3(real_axis), 0); 
+
+			glm::mat4 trans_mat2 = glm::rotate(glm::mat4(1), angle, axis) * -trans_mat1; //take the reverse of trans_mat1 and rotate it
+			glm::vec3 trans_vec2(trans_mat2[3][0], trans_mat2[3][1], trans_mat2[3][2]);							
+			cube->MyTranslate(trans_vec2, 0); //translate to the final location
+		}
+	}
+
+
+	if (true) {
+		vector<vector<vector<Shape*>>> new_rubicks_cube = make_cube();
+		for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
+			for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
+				if (rotation_axis == 'x') {
+					Shape* cube = rubicks_cube[index][i][j];
+					if (angle < 0)
+						new_rubicks_cube[index][RUBIKS_CUBE_SIZE-1 - j][i] = cube;
+					else
+						new_rubicks_cube[index][j][RUBIKS_CUBE_SIZE-1 - i] = cube;
+				} else if (rotation_axis == 'y') {
+					Shape* cube = rubicks_cube[i][index][j];
+					if (angle > 0)
+						new_rubicks_cube[RUBIKS_CUBE_SIZE-1 - j][index][i] = cube;
+					else 
+						new_rubicks_cube[j][index][RUBIKS_CUBE_SIZE-1 - i] = cube;
+				} else {
+					Shape* cube = rubicks_cube[i][j][index];
+					if (angle < 0)
+						new_rubicks_cube[RUBIKS_CUBE_SIZE-1 - j][i][index] = cube;
+					else
+						new_rubicks_cube[j][RUBIKS_CUBE_SIZE-1 - i][index] = cube;
+				}
+			}
+		}
+	}
+	
 }
 
 Game::~Game(void)
