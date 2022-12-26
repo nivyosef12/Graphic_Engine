@@ -9,8 +9,8 @@ using namespace std;
 const double pi = 3.14159265358979323846;
 
 //parameters:
-float RUBIKS_CUBE_SIZE = 3.f;
-float CUBE_SIZE = 2.f;
+float RUBIKS_CUBE_SIZE = 5.f;
+float CUBE_SIZE = 3.f;
 // static vector<vector<vector<Shape*>>> rubicks_cube;
 float ROTATION_ANGLE = pi / 4;
 glm::mat4 cube_center_trans(1);
@@ -48,10 +48,10 @@ void Game::Init()
 	rubicks_cube = make_cube();
 
 	int shape_indx = 0;
-	for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
-		for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
-			for (int k = 0; k < RUBIKS_CUBE_SIZE; k++) {
-				if (i == 0 && j == 0 && k == 0) {
+	for (int z = 0; z < RUBIKS_CUBE_SIZE; z++) {
+		for (int y = 0; y < RUBIKS_CUBE_SIZE; y++) {
+			for (int x = 0; x < RUBIKS_CUBE_SIZE; x++) {
+				if (x == 0 && y == 0 && z == 0) {
 					AddShape(Cube, -1, TRIANGLES);
 					SetShapeTex(0, 0);
 				} else {
@@ -59,9 +59,9 @@ void Game::Init()
 				}
 				/*printf("i: %i, j: %i, k: %i\n", i, j, k);
 				printf("shape index: %i\n", shape_indx);*/
-				rubicks_cube[k][j][i] = shapes[shape_indx];
+				rubicks_cube[x][y][z] = shapes[shape_indx];
 				float offset = CUBE_SIZE * (RUBIKS_CUBE_SIZE-1) / 2;
-				shapes[shape_indx]->MyTranslate(glm::vec3(k*CUBE_SIZE - offset, j*CUBE_SIZE - offset, -1*(i*CUBE_SIZE - offset)), 0);
+				shapes[shape_indx]->MyTranslate(glm::vec3(x*CUBE_SIZE - offset, y*CUBE_SIZE - offset, -1*(z*CUBE_SIZE - offset)), 0);
 
 				shape_indx++;
 			}
@@ -133,22 +133,27 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 		switch (key)
 		{			
 			case GLFW_KEY_UP:
-				scn->rotate_cube(-45, glm::vec3(1, 0, 0)); //rotate 45 deg counter-clockwise around the "real world's" x-axis
+				// scn->rubicks_cube[0][0][0]->MyRotate(-45, glm::vec3(1, 0, 0), 0);
+				scn->rotate_cube(-45, glm::vec3(1, 0, 0)); 
+				//rotate 45 deg counter-clockwise around the "real world's" x-axis
 				break;
 		
 			case GLFW_KEY_DOWN:
-				scn->rotate_cube(45, glm::vec3(1, 0, 0)); //rotate 45 deg clockwise around the "real world's" x-axis
+				// scn->rubicks_cube[0][0][0]->MyRotate(45, glm::vec3(1, 0, 0), 0);
+				scn->rotate_cube(45, glm::vec3(1, 0, 0)); 
+				//rotate 45 deg clockwise around the "real world's" x-axis
 				break;
 			
 			case GLFW_KEY_RIGHT:
-				scn->rotate_cube(45, glm::vec3(0, 1, 0)); //rotate 45 deg clockwise around the "real world's" y-axis
+				scn->rotate_cube(45, glm::vec3(0, 1, 0)); 
+				//rotate 45 deg clockwise around the "real world's" y-axis
 				break;
 
 			case GLFW_KEY_LEFT:
-				scn->rotate_cube(-45, glm::vec3(0, 1, 0)); //rotate 45 deg counter-clockwise around the "real world's" y-axis
+				scn->rotate_cube(-45, glm::vec3(0, 1, 0)); 
+				//rotate 45 deg counter-clockwise around the "real world's" y-axis
 				break;
 
-		
 		default:
 			break;
 		}
@@ -157,11 +162,10 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 
 void Game::rotate_cube(float angle, glm::vec3 axis)
 {
-	// vector<vector<vector<Shape*>>> new_cube = scn->make_cube();
-	for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
-		for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
-			for (int k = 0; k < RUBIKS_CUBE_SIZE; k++) {
-				Shape* cube = rubicks_cube[k][j][i];
+	for (int z = 0; z < RUBIKS_CUBE_SIZE; z++) {
+		for (int y = 0; y < RUBIKS_CUBE_SIZE; y++) {
+			for (int x = 0; x < RUBIKS_CUBE_SIZE; x++) {
+				Shape* cube = rubicks_cube[x][y][z];
 				
 				glm::mat4 previous_trans = cube->get_trans();
 				glm::mat4 trans_mat1 = cube_center_trans - previous_trans; 
@@ -177,6 +181,59 @@ void Game::rotate_cube(float angle, glm::vec3 axis)
 			}
 		}
 	}
+
+	// //if a full 90 deg turn has been completed, switch the faces
+	// vector<vector<vector<Shape*>>> new_rubicks_cube = make_cube();
+	// if (true) {
+	// 	char rotation_axis = 'z';
+	// 	if (glm::all(glm::equal(axis, glm::vec3(1, 0, 0)))) {
+	// 		rotation_axis = 'x';
+	// 	} else if (glm::all(glm::equal(axis, glm::vec3(0, 1, 0)))) {
+	// 		rotation_axis = 'y';
+	// 	}
+
+	// 	int num_of_rotations = 1;
+	// 	if (angle > 0)
+	// 		num_of_rotations = 3;
+		
+	// 	for (int z = 0; z < RUBIKS_CUBE_SIZE; z++) {
+	// 		for (int y = 0; y < RUBIKS_CUBE_SIZE; y++) {
+	// 			for (int x = 0; x < RUBIKS_CUBE_SIZE; x++) {
+	// 				Shape* cube = rubicks_cube[x][y][z];
+
+	// 				for (int i = 0; i < num_of_rotations; i++) { // if rotating clockwise, rotate counter-clockwise 3 times	
+	// 					if (rotation_axis == 'x' && (z == 0 || z == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1)) {
+	// 						new_rubicks_cube[x][RUBIKS_CUBE_SIZE - z][y] = cube;
+							
+	// 						// if (z == 0 || z == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1) {
+	// 						// 	new_rubicks_cube[x][RUBIKS_CUBE_SIZE - z][y] = cube;
+	// 						// } else {
+	// 						// 	new_rubicks_cube[x][y][z] = cube;
+	// 						// }
+	// 					} else if (rotation_axis == 'y' && (z == 0 || z == RUBIKS_CUBE_SIZE-1 || x == 0 || x == RUBIKS_CUBE_SIZE-1)) {
+	// 						new_rubicks_cube[RUBIKS_CUBE_SIZE - z][y][x] = cube;
+							
+	// 						// if (z == 0 || z == RUBIKS_CUBE_SIZE-1 || x == 0 || x == RUBIKS_CUBE_SIZE-1) {
+	// 						// 	new_rubicks_cube[RUBIKS_CUBE_SIZE - z][y][x] = cube;
+	// 						// } else {
+	// 						// 	new_rubicks_cube[x][y][z] = cube;
+	// 						// }
+	// 					} else  if (rotation_axis == 'z' && (x == 0 || x == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1)) {
+	// 						new_rubicks_cube[RUBIKS_CUBE_SIZE - y][x][z] = cube;
+
+	// 						// if (x == 0 || x == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1) {
+	// 						// 	new_rubicks_cube[RUBIKS_CUBE_SIZE - y][x][z] = cube;
+	// 						// } else {
+	// 						// 	new_rubicks_cube[x][y][z] = cube;
+	// 						// }
+	// 					} else {
+	// 						new_rubicks_cube[x][y][z] = cube;
+	// 					}
+	// 				}			
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
 
 vector<vector<vector<Shape*>>> Game::make_cube()
