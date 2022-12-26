@@ -11,7 +11,7 @@ const double pi = 3.14159265358979323846;
 //parameters:
 float RUBIKS_CUBE_SIZE = 3.f;
 float CUBE_SIZE = 2.f;
-vector<vector<vector<Shape*>>> cube;
+// static vector<vector<vector<Shape*>>> rubicks_cube;
 float ROTATION_ANGLE = pi / 4;
 glm::mat4 cube_center_trans(1);
 glm::mat4 cube_center_rot(1);
@@ -45,7 +45,7 @@ void Game::Init()
 	
 	AddTexture("../res/textures/plane.png",false);
 
-	cube = make_cube();
+	rubicks_cube = make_cube();
 
 	int shape_indx = 0;
 	for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
@@ -59,7 +59,7 @@ void Game::Init()
 				}
 				/*printf("i: %i, j: %i, k: %i\n", i, j, k);
 				printf("shape index: %i\n", shape_indx);*/
-				cube[k][j][i] = shapes[shape_indx];
+				rubicks_cube[k][j][i] = shapes[shape_indx];
 				float offset = CUBE_SIZE * (RUBIKS_CUBE_SIZE-1) / 2;
 				shapes[shape_indx]->MyTranslate(glm::vec3(k*CUBE_SIZE - offset, j*CUBE_SIZE - offset, -1*(i*CUBE_SIZE - offset)), 0);
 
@@ -133,69 +133,19 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 		switch (key)
 		{			
 			case GLFW_KEY_UP:
-			{
-				// for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
-				// 	for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
-				// 		for (int k = 0; k < RUBIKS_CUBE_SIZE; k++) {
-				// 			// glm::mat4 previous_trans = cube[k][j][i]->get_trans();
-				// 			// glm::mat4 trans_mat = cube_center_trans - previous_trans;
-				// 			// glm::vec3 trans_vec1(trans_mat[3][0], trans_mat[3][1], trans_mat[3][2]);
-				// 			// cube[k][j][i]->MyTranslate(trans_vec1, 0);
-
-				// 			// cube[k][j][i]->MyRotate(-45, glm::vec3(1, 0, 0), 0);
-
-				// 			// float rotation[9] = {
-				// 			// 	1, 0                  , 0                   ,
-				// 			// 	0, cos(-ROTATION_ANGLE), -sin(-ROTATION_ANGLE),
-				// 			// 	0, sin(-ROTATION_ANGLE),  cos(-ROTATION_ANGLE)
-				// 			// };
-				// 			// glm::mat3 rotation_mat = glm::make_mat3(rotation);
-				// 			// glm::vec3 trans_vec2 = rotation_mat * -trans_vec1;
-							
-				// 			// cube[k][j][i]->MyTranslate(trans_vec2, 0);
-
-
-				// 			float angle = -45;
-				// 			glm::vec3 axis(1, 0, 0);
-				// 			printf("before\n");
-				// 			glm::mat4 previous_trans = cube[k][j][i]->get_trans();
-				// 			printf("after\n");
-				// 			glm::mat4 trans_mat1 = cube_center_trans - previous_trans;
-				// 			glm::vec3 trans_vec1(trans_mat1[3][0], trans_mat1[3][1], trans_mat1[3][2]);
-				// 			cube[k][j][i]->MyTranslate(trans_vec1, 0);
-
-				// 			cube[k][j][i]->MyRotate(angle, axis, 0);
-
-				// 			// float rotation[9] = {
-				// 			// 	1, 0                  , 0                   ,
-				// 			// 	0, cos(angle), -sin(angle),
-				// 			// 	0, sin(angle),  cos(angle)
-				// 			// };
-				// 			// glm::mat3 rotation_mat = glm::make_mat3(rotation);
-				// 			glm::mat4 trans_mat2 = glm::rotate(-trans_mat1, angle, axis);
-				// 			glm::vec3 trans_vec2(trans_mat2[3][0], trans_mat2[3][1], trans_mat2[3][2]);
-							
-				// 			cube[k][j][i]->MyTranslate(trans_vec2, 0);
-
-				// 		}
-				// 	}
-				// }
-
-				scn->rotate_cube(scn, -45, glm::vec3(1, 0, 0));
-			
+				scn->rotate_cube(-45, glm::vec3(1, 0, 0)); //rotate 45 deg counter-clockwise around the "real world's" x-axis
 				break;
-			}
 		
 			case GLFW_KEY_DOWN:
-				scn->rotate_cube(scn, 45, glm::vec3(1, 0, 0));
+				scn->rotate_cube(45, glm::vec3(1, 0, 0)); //rotate 45 deg clockwise around the "real world's" x-axis
 				break;
 			
 			case GLFW_KEY_RIGHT:
-				scn->rotate_cube(scn, 45, glm::vec3(0, 1, 0));
+				scn->rotate_cube(45, glm::vec3(0, 1, 0)); //rotate 45 deg clockwise around the "real world's" y-axis
 				break;
 
 			case GLFW_KEY_LEFT:
-				scn->rotate_cube(scn, -45, glm::vec3(0, 1, 0));
+				scn->rotate_cube(-45, glm::vec3(0, 1, 0)); //rotate 45 deg counter-clockwise around the "real world's" y-axis
 				break;
 
 		
@@ -205,31 +155,25 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 	}
 }
 
-void Game::rotate_cube(Game* scn, float angle, glm::vec3 axis)
+void Game::rotate_cube(float angle, glm::vec3 axis)
 {
-	vector<vector<vector<Shape*>>> new_cube = scn->make_cube();
+	// vector<vector<vector<Shape*>>> new_cube = scn->make_cube();
 	for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
 		for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
 			for (int k = 0; k < RUBIKS_CUBE_SIZE; k++) {
-				printf("before\n");
-				glm::mat4 previous_trans = cube[k][j][i]->get_trans();
-				printf("after\n");
-				glm::mat4 trans_mat1 = cube_center_trans - previous_trans;
-				glm::vec3 trans_vec1(trans_mat1[3][0], trans_mat1[3][1], trans_mat1[3][2]);
-				cube[k][j][i]->MyTranslate(trans_vec1, 0);
-
-				cube[k][j][i]->MyRotate(angle, axis, 0);
-
-				// float rotation[9] = {
-				// 	1, 0                  , 0                   ,
-				// 	0, cos(angle), -sin(angle),
-				// 	0, sin(angle),  cos(angle)
-				// };
-				// glm::mat3 rotation_mat = glm::make_mat3(rotation);
-				glm::mat4 trans_mat2 = glm::rotate(-trans_mat1, angle, axis);
-				glm::vec3 trans_vec2(trans_mat2[3][0], trans_mat2[3][1], trans_mat2[3][2]);
+				Shape* cube = rubicks_cube[k][j][i];
 				
-				cube[k][j][i]->MyTranslate(trans_vec2, 0);
+				glm::mat4 previous_trans = cube->get_trans();
+				glm::mat4 trans_mat1 = cube_center_trans - previous_trans; 
+				glm::vec3 trans_vec1(trans_mat1[3][0], trans_mat1[3][1], trans_mat1[3][2]); //the translation matrix from the cube's position to the center of the rubick's cube
+				cube->MyTranslate(trans_vec1, 0); //translate to the center of the rubick's cube
+
+				glm::vec4 real_axis = glm::inverse(cube->get_rot()) * glm::vec4(axis, 1); //rotate the "real" x-axis by the opposite of the rotations that the cube did, this is the real x-axis as the cube sees it
+				cube->MyRotate(angle, glm::vec3(real_axis), 0); 
+
+				glm::mat4 trans_mat2 = glm::rotate(glm::mat4(1), angle, axis) * -trans_mat1; //take the reverse of trans_mat1 and rotate it
+				glm::vec3 trans_vec2(trans_mat2[3][0], trans_mat2[3][1], trans_mat2[3][2]);							
+				cube->MyTranslate(trans_vec2, 0); //translate to the final location
 			}
 		}
 	}
@@ -239,9 +183,9 @@ vector<vector<vector<Shape*>>> Game::make_cube()
 {
 	vector<Shape*> line(RUBIKS_CUBE_SIZE);
 	vector<vector<Shape*>> face(RUBIKS_CUBE_SIZE, line);
-	cube = vector<vector<vector<Shape*>>>(RUBIKS_CUBE_SIZE, face);
+	rubicks_cube = vector<vector<vector<Shape*>>>(RUBIKS_CUBE_SIZE, face);
 
-	return cube;
+	return rubicks_cube;
 }
 
 Game::~Game(void)

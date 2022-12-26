@@ -17,8 +17,11 @@ public:
 	void WhenTranslate();
 	void Motion();
 	static void my_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-	static void rotate_cube(Game* scn, float angle, glm::vec3 axis);
+	void rotate_cube(float angle, glm::vec3 axis);
 	vector<vector<vector<Shape*>>> make_cube();
 	~Game(void);
+
+private:
+	vector<vector<vector<Shape*>>> rubicks_cube;
 };
 
