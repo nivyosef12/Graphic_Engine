@@ -6,7 +6,7 @@ using namespace std;
 
 //parameters:
 float RUBIKS_CUBE_SIZE = 3.f;
-float CUBE_SIZE = 3.f;
+float CUBE_SIZE = 2.f;
 vector<vector<vector<Shape*>>> cube;
 
 static void printMat(const glm::mat4 mat)
@@ -30,7 +30,6 @@ Game::Game(float angle ,float relationWH, float near1, float far1) : Scene(angle
 
 void Game::Init()
 {		
-
 
 	AddShader("../res/shaders/pickingShader");	
 	AddShader("../res/shaders/basicShader");
@@ -62,6 +61,7 @@ void Game::Init()
 		}
 	}
 
+
 	// AddShape(Plane, -1, TRIANGLES);
 	// shapes[shape_indx]->MyScale(glm::vec3(8, 8, 8));
 
@@ -87,6 +87,7 @@ void Game::Init()
 	//ReadPixel(); //uncomment when you are reading from the z-buffer
 }
 
+
 void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	Game *scn = (Game*)glfwGetWindowUserPointer(window);
 
@@ -100,9 +101,60 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 					- rotate the cube the desired amount - lets call the rotation matrix r
 					- translate the cube with the argument r*-v or -v*r (the rotated vector -v)
 				*/
+				/*
+				for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
+					for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
+						for (int k = 0; k < RUBIKS_CUBE_SIZE; k++) {
+							glm::mat4 previous_trans = cube[k][j][i]->get_trans();
+							glm::mat4 trans_mat = cube_center_trans - previous_trans;
+							float rotation[16] = {
+								1, 0                  , 0                   , 0,
+								0, cos(ROTATION_ANGLE), -sin(ROTATION_ANGLE), 0,
+								0, sin(ROTATION_ANGLE),  cos(ROTATION_ANGLE), 0,
+								0, 0                  , 0                   , 1
+							};
+							glm::mat4 rotation_mat = glm::make_mat4(rotation);
+							rotation_mat = glm::transpose(rotation_mat);
+							glm::mat4 new_transform = trans_mat * rotation_mat * glm::inverse(trans_mat);
+
+							cube[k][j][i]->MakeTrans(new_transform);
+
+						}
+					}
+				}
+				*/
+
 				break;
 			case GLFW_KEY_DOWN:
 				
+				break;
+
+			case GLFW_KEY_LEFT:
+
+				for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
+					for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
+						for (int k = 0; k < RUBIKS_CUBE_SIZE; k++) {
+							float offset = CUBE_SIZE * (RUBIKS_CUBE_SIZE - 1) / 2;
+							cube[k][j][i]->MyTranslate(glm::vec3(0, 0, 0), 0);
+							cube[k][j][i]->MyRotate(-45, glm::vec3(1, 0, 0), 0);
+
+						}
+					}
+				}
+				break;
+
+			case GLFW_KEY_RIGHT:
+
+				for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
+					for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
+						for (int k = 0; k < RUBIKS_CUBE_SIZE; k++) {
+							float offset = CUBE_SIZE * (RUBIKS_CUBE_SIZE - 1) / 2;
+							cube[k][j][i]->MyTranslate(glm::vec3(0, 0, 0), 0);
+							cube[k][j][i]->MyRotate(45, glm::vec3(1, 0, 0), 0);
+
+						}
+					}
+				}
 				break;
 
 		default:

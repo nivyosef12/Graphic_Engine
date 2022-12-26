@@ -15,8 +15,6 @@ public:
 	void WhenTranslate();
 	void Motion();
 	~Game(void);
-
-private:
-	void my_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	static void my_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 };
 
