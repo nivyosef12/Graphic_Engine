@@ -20,6 +20,7 @@ int main(int argc,char *argv[])
 	scn->Init();
 
 	display.SetScene(scn);
+	display.AddKeyCallBack(scn->my_key_callback);
 
 	display.AddKeyCallBack(scn->my_key_callback);
 

@@ -17,6 +17,7 @@ glm::mat4 cube_center_trans(1);
 glm::mat4 cube_center_rot(1);
 glm::mat4 cube_center_scl(1); 
 
+
 static void printMat(const glm::mat4 mat)
 {
 	cout<<" matrix:"<<endl;
@@ -66,6 +67,7 @@ void Game::Init()
 			}
 		}
 	}
+
 
 	// AddShape(Plane, -1, TRIANGLES);
 	// shapes[shape_indx]->MyScale(glm::vec3(8, 8, 8));
