@@ -20,7 +20,7 @@ float WHOLE_CUBE_ROTATION_ANGLE = 45;
 glm::mat4 cube_center_trans(1);
 glm::mat4 cube_center_rot(1);
 glm::mat4 cube_center_scl(1); 
-map<Face, float> angles_rotated;
+map<Face, float> angles_rotated_relative;
 glm::vec3 cube_x_axis(1, 0, 0);	
 glm::vec3 cube_y_axis(0, 1, 0);	
 glm::vec3 cube_z_axis(0, 0, 1);
@@ -79,7 +79,7 @@ void Game::Init()
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
 			Face face = make_tuple(axis_lst[i], j);
-			angles_rotated[face] = 0;
+			angles_rotated_relative[face] = 0;
 		}
 	}
 
@@ -101,9 +101,9 @@ void Game::Init()
 
 	pickedShape = 0;
 	
-	MoveCamera(0,zTranslate,55);
-	MoveCamera(0,xTranslate,12);
-	MoveCamera(0,yTranslate,10);
+	MoveCamera(0,zTranslate,35);
+	MoveCamera(0,xTranslate,8);
+	MoveCamera(0,yTranslate,8);
 
 	pickedShape = -1;
 
@@ -226,27 +226,30 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 				scn->change_cube_axes(glm::vec3(0, 0, 1));
 				break;
 			case GLFW_KEY_R:
-				angles_rotated[make_tuple('x', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
+				angles_rotated_relative[make_tuple('x', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
 				scn->rotate_face(ROTATION_ANGLE, cube_x_axis, RUBIKS_CUBE_SIZE-1);
 				break;
 			case GLFW_KEY_L:
-				angles_rotated[make_tuple('x', 0)] += ROTATION_ANGLE;
+				angles_rotated_relative[make_tuple('x', 0)] += ROTATION_ANGLE;
 				scn->rotate_face(ROTATION_ANGLE, cube_x_axis, 0);
 				break;
 			case GLFW_KEY_U:
-				angles_rotated[make_tuple('y', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
+				cout << "angle before: " << angles_rotated_relative[make_tuple('y', RUBIKS_CUBE_SIZE-1)] << endl << endl;
+				angles_rotated_relative[make_tuple('y', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
+				cout << "angle between: " << angles_rotated_relative[make_tuple('y', RUBIKS_CUBE_SIZE-1)] << endl << endl;
 				scn->rotate_face(ROTATION_ANGLE, cube_y_axis, RUBIKS_CUBE_SIZE-1);
+				cout << "angle after: " << angles_rotated_relative[make_tuple('y', RUBIKS_CUBE_SIZE-1)] << endl << endl;
 				break;
 			case GLFW_KEY_D:
-				angles_rotated[make_tuple('y', 0)] += ROTATION_ANGLE;
+				angles_rotated_relative[make_tuple('y', 0)] += ROTATION_ANGLE;
 				scn->rotate_face(ROTATION_ANGLE, cube_y_axis, 0);
 				break;
 			case GLFW_KEY_B:
-				angles_rotated[make_tuple('z', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
+				angles_rotated_relative[make_tuple('z', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
 				scn->rotate_face(ROTATION_ANGLE, cube_z_axis, RUBIKS_CUBE_SIZE-1);
 				break;
 			case GLFW_KEY_F:
-				angles_rotated[make_tuple('z', 0)] += ROTATION_ANGLE;
+				angles_rotated_relative[make_tuple('z', 0)] += ROTATION_ANGLE;
 				scn->rotate_face(ROTATION_ANGLE, cube_z_axis, 0);
 				break;
 			case GLFW_KEY_SPACE:
@@ -262,20 +265,48 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 				if (WHOLE_CUBE_ROTATION_ANGLE < 90)
 					WHOLE_CUBE_ROTATION_ANGLE *= 2;
 				break;
-			case GLFW_KEY_P:
-				cube = scn->rubicks_cube[RUBIKS_CUBE_SIZE-1][RUBIKS_CUBE_SIZE-1][0];
-				cube->MyRotate(45, cube_y_axis, 0);
+			case GLFW_KEY_1:
+				cube = scn->rubicks_cube[0][0][0];
+				cube->MyRotate(ROTATION_ANGLE, cube_y_axis, 0);
 				break;
-			case GLFW_KEY_O:
-				cube = scn->rubicks_cube[RUBIKS_CUBE_SIZE-1][RUBIKS_CUBE_SIZE-1][0];
-				cube->MyRotate(-45, cube_y_axis, 0);
+			case GLFW_KEY_2:
+				cube = scn->rubicks_cube[1][0][0];
+				cube->MyRotate(ROTATION_ANGLE, cube_y_axis, 0);
+				break;
+			case GLFW_KEY_3:
+				cube = scn->rubicks_cube[2][0][0];
+				cube->MyRotate(ROTATION_ANGLE, cube_y_axis, 0);
+				break;
+			case GLFW_KEY_4:
+				cube = scn->rubicks_cube[0][1][0];
+				cube->MyRotate(ROTATION_ANGLE, cube_y_axis, 0);
+				break;
+			case GLFW_KEY_5:
+				cube = scn->rubicks_cube[1][1][0];
+				cube->MyRotate(ROTATION_ANGLE, cube_y_axis, 0);
+				break;
+			case GLFW_KEY_6:
+				cube = scn->rubicks_cube[2][1][0];
+				cube->MyRotate(ROTATION_ANGLE, cube_y_axis, 0);
+				break;
+			case GLFW_KEY_7:
+				cube = scn->rubicks_cube[0][2][0];
+				cube->MyRotate(ROTATION_ANGLE, cube_y_axis, 0);
+				break;
+			case GLFW_KEY_8:
+				cube = scn->rubicks_cube[1][2][0];
+				cube->MyRotate(ROTATION_ANGLE, cube_y_axis, 0);
+				break;
+			case GLFW_KEY_9:
+				cube = scn->rubicks_cube[2][2][0];
+				cube->MyRotate(ROTATION_ANGLE, cube_y_axis, 0);
 				break;
 			
 		default:
 			break;
 		}
 
-		for (auto const& x: angles_rotated) {
+		for (auto const& x: angles_rotated_relative) {
 			cout << "key: " << get<0>(x.first) << ", " << get<1>(x.first) << " ... ";
 			cout << "value: " << x.second << endl;
 		}
@@ -285,10 +316,23 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 
 void Game::change_cube_axes(glm::vec3 axis)
 {
+	printMat(cube_center_rot);
+
+	cout << "before: x- " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] << "  ";
+	cout << "y- " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "  ";
+	cout << "z- " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << endl;
+
 	cube_center_rot = glm::rotate(glm::mat4(1), WHOLE_CUBE_ROTATION_ANGLE, axis) * cube_center_rot;
-	cube_x_axis = glm::vec3(cube_center_rot * glm::vec4(1, 0, 0, 1));
-	cube_y_axis = glm::vec3(cube_center_rot * glm::vec4(0, 1, 0, 1));
-	cube_z_axis = glm::vec3(cube_center_rot * -glm::vec4(0, 0, 1, 1));			
+	cube_x_axis = glm::normalize(glm::vec3(cube_center_rot * glm::vec4(1, 0, 0, 1)));
+	cube_y_axis = glm::normalize(glm::vec3(cube_center_rot * glm::vec4(0, 1, 0, 1)));
+	cube_z_axis = glm::normalize(glm::vec3(cube_center_rot * glm::vec4(0, 0, 1, 1)));			
+
+	cout << "after: x- " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] << "  ";
+	cout << "y- " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "  ";
+	cout << "z- " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << endl << endl << endl;
+
+	printMat(cube_center_rot);
+
 }
 
 void Game::rotate_cube(float angle, glm::vec3 axis)
@@ -323,69 +367,45 @@ void Game::rotate_cube(float angle, glm::vec3 axis)
 	
 	bool rotated_data_structure = true;
 	for (int z = 0; z < RUBIKS_CUBE_SIZE; z++) {
-		// for (int y = 0; y < RUBIKS_CUBE_SIZE; y++) {
-		// 	for (int x = 0; x < RUBIKS_CUBE_SIZE; x++) {
-		// 		Shape* cube = rubicks_cube[x][y][z];
-
-		// 		if (rotation_axis == 'x' && (z == 0 || z == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1)) {
-		// 			if (angle < 0)
-		// 				new_rubicks_cube[x][RUBIKS_CUBE_SIZE-1 - z][y] = cube;
-		// 			else
-		// 				new_rubicks_cube[x][z][RUBIKS_CUBE_SIZE-1 - y] = cube;
-
-		// 		} else if (rotation_axis == 'y' && (z == 0 || z == RUBIKS_CUBE_SIZE-1 || x == 0 || x == RUBIKS_CUBE_SIZE-1)) {
-		// 			if (angle > 0)
-		// 				new_rubicks_cube[RUBIKS_CUBE_SIZE-1 - z][y][x] = cube;
-		// 			else 
-		// 				new_rubicks_cube[z][y][RUBIKS_CUBE_SIZE-1 - x] = cube;
-
-		// 		} else  if (rotation_axis == 'z' && (x == 0 || x == RUBIKS_CUBE_SIZE-1 || y == 0 || y == RUBIKS_CUBE_SIZE-1)) {
-		// 			if (angle < 0)
-		// 				new_rubicks_cube[RUBIKS_CUBE_SIZE-1 - y][x][z] = cube;
-		// 			else
-		// 				new_rubicks_cube[y][RUBIKS_CUBE_SIZE-1 - x][z] = cube;
-
-		// 		} else {
-		// 			new_rubicks_cube[x][y][z] = cube;
-		// 		}
-		// 	}
-		// }
 		rotated_data_structure &= rotate_face(angle, axis, z);
 	}
 
-	// if (rotated_data_structure) {
-	// 	glm::vec3* axis1;
-	// 	glm::vec3* axis2;
-	// 	if (rotation_axis == 'x') {
-	// 		axis1 = &cube_y_axis;
-	// 		axis2 = &cube_z_axis;
-	// 	} else if (rotation_axis == 'y') {
-	// 		axis1 = &cube_z_axis;
-	// 		axis2 = &cube_x_axis;
-	// 	} else {
-	// 		axis1 = &cube_x_axis;
-	// 		axis2 = &cube_y_axis;	
-	// 	}
+	if (rotated_data_structure) {
+		printf("exchanging axes\n");
+		// glm::vec3* axis1;
+		// glm::vec3* axis2;
+		// if (rotation_axis == 'x') {
+		// 	axis1 = &cube_y_axis;
+		// 	axis2 = &cube_z_axis;
+		// } else if (rotation_axis == 'y') {
+		// 	axis1 = &cube_z_axis;
+		// 	axis2 = &cube_x_axis;
+		// } else {
+		// 	axis1 = &cube_x_axis;
+		// 	axis2 = &cube_y_axis;	
+		// }
 
-	// 	float sign = ROTATION_ANGLE/abs(ROTATION_ANGLE);
-	// 	glm::vec3 tmp = *axis1;
-	// 	*axis1 = -sign * *axis2;
-	// 	*axis2 = sign * tmp;
+		// float sign = ROTATION_ANGLE/abs(ROTATION_ANGLE);
+		// glm::vec3 tmp = *axis1;
+		// *axis1 = -sign * *axis2;
+		// *axis2 = sign * tmp;
 
-	// 	// if (rotation_axis == 'x') {
-	// 	// 	tmp = cube_y_axis;
-	// 	// 	cube_y_axis = sign * cube_z_axis;
-	// 	// 	cube_z_axis = -sign * tmp;
-	// 	// } else if (rotation_axis == 'y') {
-	// 	// 	tmp = cube_z_axis;
-	// 	// 	cube_z_axis = sign * cube_x_axis;
-	// 	// 	cube_x_axis = -sign * tmp;
-	// 	// } else {
-	// 	// 	tmp = cube_x_axis;
-	// 	// 	cube_x_axis = sign * cube_y_axis;
-	// 	// 	cube_y_axis = -sign * tmp;	
-	// 	// }
-	// }
+		float sign = ROTATION_ANGLE/abs(ROTATION_ANGLE);
+		glm::vec3 tmp;
+		if (rotation_axis == 'x') {
+			tmp = cube_y_axis;
+			cube_y_axis = sign * cube_z_axis;
+			cube_z_axis = -sign * tmp;
+		} else if (rotation_axis == 'y') {
+			tmp = cube_z_axis;
+			cube_z_axis = -sign * cube_x_axis;
+			cube_x_axis = sign * tmp;
+		} else {
+			tmp = cube_x_axis;
+			cube_x_axis = sign * cube_y_axis;
+			cube_y_axis = -sign * tmp;	
+		}
+	}
 	
 	// bool should_change_data_structure = true;
 	// for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
@@ -414,7 +434,7 @@ vector<vector<vector<Shape*>>> Game::make_cube()
 	return cube;
 }
 
-bool Game::rotate_face(float angle, glm::vec3 axis, int index)
+bool Game::rotate_face(float angle, glm::vec3 axis, int index, )
 {
 	char rotation_axis = 'z';
 	if (glm::all(glm::equal(axis, cube_x_axis)) || glm::all(glm::equal(axis, glm::vec3(1, 0, 0)))) {
