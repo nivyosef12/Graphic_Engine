@@ -132,14 +132,14 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 		switch (key)
 		{			
 			case GLFW_KEY_UP:
-				scn->rubicks_cube[2][2][0]->MyRotate(-ROTATION_ANGLE, glm::vec3(1, 0, 0), 0);
-				// scn->rotate_cube(-ROTATION_ANGLE, glm::vec3(1, 0, 0)); 
+				// scn->rubicks_cube[2][2][0]->MyRotate(-ROTATION_ANGLE, glm::vec3(1, 0, 0), 0);
+				scn->rotate_cube(-ROTATION_ANGLE, glm::vec3(1, 0, 0)); 
 				//rotate 45 deg counter-clockwise around the "real world's" x-axis
 				break;
 		
 			case GLFW_KEY_DOWN:
-				scn->rubicks_cube[2][2][0]->MyRotate(ROTATION_ANGLE, glm::vec3(1, 0, 0), 0);
-				// scn->rotate_cube(ROTATION_ANGLE, glm::vec3(1, 0, 0)); 
+				// scn->rubicks_cube[2][2][0]->MyRotate(ROTATION_ANGLE, glm::vec3(1, 0, 0), 0);
+				scn->rotate_cube(ROTATION_ANGLE, glm::vec3(1, 0, 0)); 
 				//rotate 45 deg clockwise around the "real world's" x-axis
 				break;
 			
@@ -166,14 +166,23 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 				scn->rotate_cube(ROTATION_ANGLE, glm::vec3(0, 0, 1)); 
 				//rotate 45 deg clockwise around the "real world's" y-axis
 				break;
-			case GLFW_KEY_F:
+			case GLFW_KEY_R:
+				scn->rotate_face(ROTATION_ANGLE, glm::vec3(1, 0, 0), 2);
+				break;
+			case GLFW_KEY_L:
 				scn->rotate_face(ROTATION_ANGLE, glm::vec3(1, 0, 0), 0);
 				break;
-			case GLFW_KEY_G:
-				scn->rotate_face(ROTATION_ANGLE, glm::vec3(1, 0, 0), 1);
+			case GLFW_KEY_U:
+				scn->rotate_face(ROTATION_ANGLE, glm::vec3(0, 1, 0), 2);
 				break;
-			case GLFW_KEY_H:
-				scn->rotate_face(ROTATION_ANGLE, glm::vec3(1, 0, 0), 2);
+			case GLFW_KEY_D:
+				scn->rotate_face(ROTATION_ANGLE, glm::vec3(0, 1, 0), 2);
+				break;
+			case GLFW_KEY_B:
+				scn->rotate_face(ROTATION_ANGLE, glm::vec3(0, 1, 0), 2);
+				break;
+			case GLFW_KEY_F:
+				scn->rotate_face(ROTATION_ANGLE, glm::vec3(0, 1, 0), 2);
 				break;
 			
 
