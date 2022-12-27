@@ -20,6 +20,7 @@ public:
 	void rotate_cube(float angle, glm::vec3 axis);
 	vector<vector<vector<Shape*>>> make_cube();
 	void rotate_face(float angle, glm::vec3 axis, int index);
+	void rotate_data_structure(char axis, int index, vector<vector<vector<Shape*>>>& new_rubicks_cube);
 	~Game(void);
 
 private:
