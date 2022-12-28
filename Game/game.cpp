@@ -1,3 +1,7 @@
+// TODO
+// 1. override or implement wrappin funtion to MyRotate --> 
+//                                       --> something like MyRotate(cube_x, cube_y){ call MyRotate with cube_x, cube_y}
+
 #include "game.h"
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
