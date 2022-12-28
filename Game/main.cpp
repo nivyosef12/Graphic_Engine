@@ -22,7 +22,7 @@ int main(int argc,char *argv[])
 	display.SetScene(scn);
 	display.AddKeyCallBack(scn->my_key_callback);
 
-	display.AddKeyCallBack(scn->my_key_callback);
+	// display.AddKeyCallBack(scn->my_key_callback);
 
 	while(!display.CloseWindow())
 	{
