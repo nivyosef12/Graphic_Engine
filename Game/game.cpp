@@ -2,7 +2,9 @@
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-// #include <map>
+#include <cstdlib>
+#include <Windows.h>
+// #include <unistd>
 
 using namespace std;
 
@@ -10,7 +12,7 @@ using namespace std;
 const double pi = 3.14159265358979323846;
 
 //parameters:
-float RUBIKS_CUBE_SIZE = 3.f;
+float RUBIKS_CUBE_SIZE = 5.f;
 float CUBE_SIZE = 2.f;
 // static vector<vector<vector<Shape*>>> rubicks_cube;
 float ROTATION_ANGLE = 45;
@@ -229,6 +231,9 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 				if (WHOLE_CUBE_ROTATION_ANGLE <= 90)
 					WHOLE_CUBE_ROTATION_ANGLE *= 2;
 				break;
+			case GLFW_KEY_S:
+				scn->shuffle();
+				break;
 			case GLFW_KEY_1:
 				cube = scn->rubicks_cube[0][0][0];
 				cube->MyRotate(ROTATION_ANGLE, cube_y_axis, 0);
@@ -270,6 +275,29 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 			break;
 		}
 	}
+}
+
+void Game::shuffle() {
+	vector<glm::vec3> axis = { cube_x_axis, cube_y_axis, cube_z_axis };
+	vector<char> axis_name = { 'x', 'y', 'z'};
+	vector<float> faces = {0 , RUBIKS_CUBE_SIZE - 1};
+	int num_of_actions = rand() % 10 + 11; // in range 10 - 20
+
+	for (int i = 0; i < num_of_actions; i++) {
+
+		int axis_index = rand() % axis.size();
+		int face_index = rand() % faces.size();
+		float sign = -1 * (rand() % 1 + 1); // clockwise or counter-clockwise
+	
+		angles_rotated_relative[make_tuple(axis_name[axis_index], faces[face_index])] += (sign * ROTATION_ANGLE);
+		rotate_face(sign * ROTATION_ANGLE, axis[axis_index], faces[face_index], angles_rotated_relative);
+		sleep(0.5);
+
+		angles_rotated_relative[make_tuple(axis_name[axis_index], faces[face_index])] += (sign * ROTATION_ANGLE);
+		rotate_face(sign * ROTATION_ANGLE, axis[axis_index], faces[face_index], angles_rotated_relative);
+		sleep(0.5);
+	}
+
 }
 
 void Game::change_cube_axes(glm::vec3 axis)
