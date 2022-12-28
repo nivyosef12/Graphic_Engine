@@ -4,11 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <cstdlib>
 #include <time.h>
-// #include <windows.h>
-// #include <iostream>
-// #include <unistd>
-// #include <chrono>
-// #include <thread>
+
 
 using namespace std;
 
@@ -16,7 +12,7 @@ using namespace std;
 const double pi = 3.14159265358979323846;
 
 //parameters:
-float RUBIKS_CUBE_SIZE = 5.f;
+float RUBIKS_CUBE_SIZE = 3.f;
 float CUBE_SIZE = 2.f;
 // static vector<vector<vector<Shape*>>> rubicks_cube;
 float ROTATION_ANGLE = 45;
@@ -286,30 +282,25 @@ void Game::shuffle() {
 	vector<glm::vec3> axis = { cube_x_axis, cube_y_axis, cube_z_axis };
 	vector<char> axis_name = { 'x', 'y', 'z'};
 	vector<float> faces = {0 , RUBIKS_CUBE_SIZE - 1};
-	srand(time(0));
-	int num_of_actions = rand() % 10 + 11; // in range 10 - 20
+	int num_of_actions = rand() % 10 + 16; // in range 15 - 25
 
 	for (int i = 0; i < num_of_actions; i++) {
-
 		int axis_index = rand() % axis.size();
 		int face_index = rand() % faces.size();
-		float sign = -1 * (rand() % 1 + 1); // clockwise or counter-clockwise
-	
-		angles_rotated_relative[make_tuple(axis_name[axis_index], faces[face_index])] += (sign * ROTATION_ANGLE);
-		rotate_face(sign * ROTATION_ANGLE, axis[axis_index], faces[face_index], angles_rotated_relative);
-		// Draw(1,0,BACK,true,false);
-		// Motion();
-		// this_thread::sleep_for(chrono::milliseconds(500));
+		float sign = pow(-1, (rand() % 2 + 1)); // clockwise or counter-clockwise
+		
+		printf("axis_index: %i, angle: %f, face_index: %i\n", axis_index, sign * ROTATION_ANGLE, face_index);
 
 		angles_rotated_relative[make_tuple(axis_name[axis_index], faces[face_index])] += (sign * ROTATION_ANGLE);
 		rotate_face(sign * ROTATION_ANGLE, axis[axis_index], faces[face_index], angles_rotated_relative);
-		// Draw(1,0,BACK,true,false);
-		// Motion();
-		// this_thread::sleep_for(chrono::milliseconds(500));
+
+		// this_thread::sleep_for(chrono::milliseconds(500));    // sleep for 0.5 second
+
+		angles_rotated_relative[make_tuple(axis_name[axis_index], faces[face_index])] += (sign * ROTATION_ANGLE);
+		rotate_face(sign * ROTATION_ANGLE, axis[axis_index], faces[face_index], angles_rotated_relative);
+		// this_thread::sleep_for(chrono::milliseconds(500));    // sleep for 0.5 second
 	}
-	printf("after for\n\n");
-
-
+	printf("--\n");
 }
 
 void Game::change_cube_axes(glm::vec3 axis)
