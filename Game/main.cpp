@@ -7,7 +7,7 @@ int main(int argc,char *argv[])
 {
 	const int DISPLAY_WIDTH = 800;
 	const int DISPLAY_HEIGHT = 800;
-	const float CAMERA_ANGLE = 45.f;
+	const float CAMERA_ANGLE = 45.0f;
 	const float NEAR = 1.0f;
 	const float FAR = 100.0f;
 
@@ -20,6 +20,8 @@ int main(int argc,char *argv[])
 	scn->Init();
 
 	display.SetScene(scn);
+	display.AddKeyCallBack(scn->my_key_callback);
+	display.AddMouseCallBacks(scn->my_mouse_callback, scn->my_scroll_callback, scn->my_cursor_position_callback);
 
 	while(!display.CloseWindow())
 	{
