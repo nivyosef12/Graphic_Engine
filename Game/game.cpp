@@ -3,7 +3,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <cstdlib>
-#include <math.h>
+#include <time.h>
+
 
 using namespace std;
 
@@ -277,10 +278,12 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 }
 
 void Game::shuffle() {
+	printf("entered shuffle\n\n");
 	vector<glm::vec3> axis = { cube_x_axis, cube_y_axis, cube_z_axis };
 	vector<char> axis_name = { 'x', 'y', 'z'};
 	vector<float> faces = {0 , RUBIKS_CUBE_SIZE - 1};
 	int num_of_actions = rand() % 10 + 16; // in range 15 - 25
+
 	for (int i = 0; i < num_of_actions; i++) {
 		int axis_index = rand() % axis.size();
 		int face_index = rand() % faces.size();
@@ -290,6 +293,7 @@ void Game::shuffle() {
 
 		angles_rotated_relative[make_tuple(axis_name[axis_index], faces[face_index])] += (sign * ROTATION_ANGLE);
 		rotate_face(sign * ROTATION_ANGLE, axis[axis_index], faces[face_index], angles_rotated_relative);
+
 		// this_thread::sleep_for(chrono::milliseconds(500));    // sleep for 0.5 second
 
 		angles_rotated_relative[make_tuple(axis_name[axis_index], faces[face_index])] += (sign * ROTATION_ANGLE);
