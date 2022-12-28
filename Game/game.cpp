@@ -4,11 +4,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <cstdlib>
 #include <time.h>
-// #include <windows.h>
-// #include <iostream>
-// #include <unistd>
-// #include <chrono>
-// #include <thread>
 
 using namespace std;
 
