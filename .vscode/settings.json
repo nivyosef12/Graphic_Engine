@@ -3,6 +3,7 @@
         "vector": "cpp",
         "cmath": "cpp",
         "map": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "thread": "cpp"
     }
 }

@@ -3,8 +3,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <cstdlib>
-#include <Windows.h>
+#include <time.h>
+// #include <windows.h>
+// #include <iostream>
 // #include <unistd>
+// #include <chrono>
+// #include <thread>
 
 using namespace std;
 
@@ -278,9 +282,11 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 }
 
 void Game::shuffle() {
+	printf("entered shuffle\n\n");
 	vector<glm::vec3> axis = { cube_x_axis, cube_y_axis, cube_z_axis };
 	vector<char> axis_name = { 'x', 'y', 'z'};
 	vector<float> faces = {0 , RUBIKS_CUBE_SIZE - 1};
+	srand(time(0));
 	int num_of_actions = rand() % 10 + 11; // in range 10 - 20
 
 	for (int i = 0; i < num_of_actions; i++) {
@@ -291,12 +297,18 @@ void Game::shuffle() {
 	
 		angles_rotated_relative[make_tuple(axis_name[axis_index], faces[face_index])] += (sign * ROTATION_ANGLE);
 		rotate_face(sign * ROTATION_ANGLE, axis[axis_index], faces[face_index], angles_rotated_relative);
-		sleep(0.5);
+		// Draw(1,0,BACK,true,false);
+		// Motion();
+		// this_thread::sleep_for(chrono::milliseconds(500));
 
 		angles_rotated_relative[make_tuple(axis_name[axis_index], faces[face_index])] += (sign * ROTATION_ANGLE);
 		rotate_face(sign * ROTATION_ANGLE, axis[axis_index], faces[face_index], angles_rotated_relative);
-		sleep(0.5);
+		// Draw(1,0,BACK,true,false);
+		// Motion();
+		// this_thread::sleep_for(chrono::milliseconds(500));
 	}
+	printf("after for\n\n");
+
 
 }
 
