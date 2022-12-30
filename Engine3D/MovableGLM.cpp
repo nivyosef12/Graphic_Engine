@@ -40,7 +40,7 @@ void  MovableGLM::MyRotate(float angle,glm::vec3 &vec,int mode)
 	if (mode == 1) {
 		glm::mat4 inverse_rot = glm::inverse(get_rot());
 		glm::vec3 new_vec = glm::normalize(glm::vec3(inverse_rot * glm::vec4(vec, 1)));
-		rot = glm::rotate(glm::mat4(1),angle,new_vec) * rot;
+		rot = glm::rotate(rot,angle,new_vec);
 	} else {
 		rot = glm::rotate(rot,angle,vec);
 	}
