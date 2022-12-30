@@ -143,8 +143,6 @@ void Game::WhenRotate(float angle_x, float angle_y)
 	// rotate_cube_axes(glm::vec3(0, 0, 1), angle_z);
 
 	bool should_switch_axes_x = true; 
-	bool should_switch_axes_y = true;
-	bool should_switch_axes_z = true; 
 	for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
 		Face face_x = make_tuple('x', i);
 
@@ -161,14 +159,17 @@ void Game::WhenRotate(float angle_x, float angle_y)
 			rubicks_cube = new_rubicks_cube;
 			angles_rotated_absolute[face_x] -= sign_x * 90;
 		}
+	}
 
+	bool should_switch_axes_y = true;
+	for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
 		Face face_y = make_tuple('y', i);
 
 		float sign_y = 0.f;
 		if (angle_y != 0)
 			sign_y = (angle_y/abs(angle_y));
 
-		cond = sign_y != 0 && (angles_rotated_absolute[face_y] >= 45 || angles_rotated_absolute[face_y] <= -45);
+		bool cond = sign_y != 0 && (angles_rotated_absolute[face_y] >= 45 || angles_rotated_absolute[face_y] <= -45);
 		should_switch_axes_y &= cond;
 		
 		if (cond) {
@@ -178,14 +179,17 @@ void Game::WhenRotate(float angle_x, float angle_y)
 			rubicks_cube = new_rubicks_cube;
 			angles_rotated_absolute[face_y] -= sign_y * 90;
 		}
+	}
 
+	bool should_switch_axes_z = true; 
+	for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
 		Face face_z = make_tuple('z', i);
 
 		float sign_z = 0.f;
 		if (angle_z != 0)
 			sign_z = (angle_z/abs(angle_z));
 
-		cond = sign_z != 0 && (angles_rotated_absolute[face_z] >= 45 || angles_rotated_absolute[face_z] <= -45);
+		bool cond = sign_z != 0 && (angles_rotated_absolute[face_z] >= 45 || angles_rotated_absolute[face_z] <= -45);
 		should_switch_axes_z &= cond;
 		
 		if (cond) {
