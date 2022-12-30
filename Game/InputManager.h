@@ -62,11 +62,11 @@
 		scn->UpdatePosition((float)xpos,(float)ypos);
 		if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 		{
-			scn->MouseProccessing(GLFW_MOUSE_BUTTON_RIGHT, cube_x_axis, cube_y_axis);
+			scn->MouseProccessing(GLFW_MOUSE_BUTTON_RIGHT);
 		}
 		else if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		{
-			scn->MouseProccessing(GLFW_MOUSE_BUTTON_LEFT, cube_x_axis, cube_y_axis);
+			scn->MouseProccessing(GLFW_MOUSE_BUTTON_LEFT);
 		}
 
 	}

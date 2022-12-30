@@ -187,7 +187,7 @@
 		return 0;
 	}
 	//return coordinates in global system for a tip of arm position is local system 
-	void Scene::MouseProccessing(int button, glm::vec3 cube_x_axis, glm::vec3 cube_y_axis)
+	void Scene::MouseProccessing(int button)
 	{
 		if(pickedShape == -1)
 		{
@@ -200,8 +200,8 @@
 			}
 			else
 			{
-				MyRotate(-xrel/2.0f, cube_y_axis, 0);
-				MyRotate(-yrel/2.0f, cube_x_axis, 0);
+				MyRotate(-xrel/2.0f, glm::vec3(0, 1, 0), 1);
+				MyRotate(-yrel/2.0f, glm::vec3(1, 0, 0), 1);
 				WhenRotate(-yrel/2.0f, -xrel/2.0f);
 			}
 		}

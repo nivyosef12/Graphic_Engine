@@ -57,7 +57,7 @@ public:
 	void UnhideShape(int shpIndx);
 
 	void UpdatePosition(float xpos, float ypos);
-	void MouseProccessing(int button, glm::vec3 cube_x_axis, glm::vec3 cube_y_axis);
+	void MouseProccessing(int button);
 	bool inline IsActive() const { return isActive;} 
 	
 	inline void SetShapeTex(int shpIndx,int texIndx){shapes[shpIndx]->SetTexture(texIndx);} 
