@@ -124,7 +124,7 @@ void Game::WhenRotate(float angle_x, float angle_y)
 	float angle_y_radians = (angle_y/360) * 2 * pi;
 	float angle_z_radians = atan2(sin(angle_x_radians) * sin(angle_y_radians), cos(angle_x_radians)); //used euler angles to calculate the angle of rotation around the z axis
 	float angle_z = (angle_z_radians/(2 * pi)) * 360;
-	cout << "angle_z: " << angle_z << endl << endl;
+	// cout << "angle_z: " << angle_z << endl << endl;
 	
 	for (auto const& x: angles_rotated_absolute) {
 		if (get<0>(x.first) == 'x')
@@ -138,9 +138,9 @@ void Game::WhenRotate(float angle_x, float angle_y)
 		}
 	}
 
-	// rotate_cube_axes(glm::vec3(1, 0, 0), angle_x);
-	// rotate_cube_axes(glm::vec3(0, 1, 0), angle_y);
-	// rotate_cube_axes(glm::vec3(0, 0, 1), angle_z);
+	// cube_x_axis = glm::normalize(glm::vec3(get_rot() * glm::vec4(cube_x_axis, 1)));
+	// cube_y_axis = glm::normalize(glm::vec3(get_rot() * glm::vec4(cube_y_axis, 1)));
+	// cube_z_axis = glm::normalize(glm::vec3(get_rot() * glm::vec4(cube_z_axis, 1)));
 
 	bool should_switch_axes_x = true; 
 	for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
@@ -208,41 +208,41 @@ void Game::WhenRotate(float angle_x, float angle_y)
 	// cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
 	
 	if (should_switch_axes_x) {
-		cout << "axes before switch:\n";
-		cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
-		cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
-		cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
+		// cout << "axes before switch:\n";
+		// cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
+		// cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
+		// cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
 	
 		vector<vector<vector<Shape*>>> new_rubicks_cube = rubicks_cube;
 		switch_cube_axes('x', angle_x);
-		cout << "axes after switch:\n";
-		cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
-		cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
-		cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
+		// cout << "axes after switch:\n";
+		// cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
+		// cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
+		// cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
 		}
 	if (should_switch_axes_y) {
-		cout << "axes before switch:\n";
-		cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
-		cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
-		cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
+		// cout << "axes before switch:\n";
+		// cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
+		// cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
+		// cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
 		vector<vector<vector<Shape*>>> new_rubicks_cube = rubicks_cube;
 		switch_cube_axes('y', angle_y);
-		cout << "axes after switch:\n";
-		cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
-		cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
-		cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
+		// cout << "axes after switch:\n";
+		// cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
+		// cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
+		// cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
 	}
 	if (should_switch_axes_z) {
-		cout << "axes before switch:\n";
-		cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
-		cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
-		cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
+		// cout << "axes before switch:\n";
+		// cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
+		// cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
+		// cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
 		vector<vector<vector<Shape*>>> new_rubicks_cube = rubicks_cube;
 		switch_cube_axes('z', angle_z);
-		cout << "axes after switch:\n";
-		cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
-		cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
-		cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
+		// cout << "axes after switch:\n";
+		// cout << "x " << cube_x_axis[0] << ", " << cube_x_axis[1] << ", " << cube_x_axis[2] <<"\n\n";
+		// cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
+		// cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
 	}
 
 	// cout << "axes after switch:\n";
@@ -250,6 +250,12 @@ void Game::WhenRotate(float angle_x, float angle_y)
 	// cout << "y " << cube_y_axis[0] << ", " << cube_y_axis[1] << ", " << cube_y_axis[2] << "\n\n";
 	// cout << "z " << cube_z_axis[0] << ", " << cube_z_axis[1] << ", " << cube_z_axis[2] << "\n\n\n";
 	// cout << "----------------------------------------------------------------------\n\n";
+
+	Face axes[] = {make_tuple('x', 0), make_tuple('x', 1), make_tuple('x', 2), make_tuple('y', 0), make_tuple('y', 1), make_tuple('y', 2), make_tuple('z', 0), make_tuple('z', 1), make_tuple('z', 2), };
+	for (Face face: axes) {
+		cout << "(" << get<0>(face) << ", " << get<1>(face) << "): " << angles_rotated_absolute[face] << endl;
+	}
+	cout << "\n\n";
 }
 
 void Game::WhenTranslate()
@@ -354,7 +360,7 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 			case GLFW_KEY_F:
 				angles_rotated_relative[make_tuple('z', 0)] += ROTATION_ANGLE;
 				scn->rotate_face(ROTATION_ANGLE, cube_z_axis, 0, angles_rotated_relative);
-				// scn->rotate_face(ROTATION_ANGLE, glm::vec3(0, 0, 1), 0, angles_rotated_relative);
+				// scn->rotate_face(ROTATION_ANGLE, glm::normalize(glm::vec3(scn->get_rot() * glm::vec4(cube_z_axis, 1))), 0, angles_rotated_relative);
 				break;
 			case GLFW_KEY_SPACE:
 				ROTATION_ANGLE *= -1;
@@ -458,7 +464,6 @@ void Game::my_scroll_callback(GLFWwindow* window, double xoffset, double yoffset
 }
 
 void Game::shuffle() {
-	printf("entered shuffle\n\n");
 	vector<glm::vec3> axis = { cube_x_axis, cube_y_axis, cube_z_axis };
 	vector<char> axis_name = { 'x', 'y', 'z'};
 	vector<float> faces = {0 , RUBIKS_CUBE_SIZE - 1};
@@ -483,9 +488,6 @@ void Game::shuffle() {
 		// Motion();
 		// this_thread::sleep_for(chrono::milliseconds(500));
 	}
-	printf("after for\n\n");
-
-
 }
 
 void Game::rotate_cube_axes(glm::vec3 axis, float angle)
@@ -608,7 +610,7 @@ bool Game::rotate_face(float angle, glm::vec3 axis, int index, map<Face, float>&
 		return false;
 	}
 
-	cout << "axis sent: " << axis[0] << ", " << axis[1] << ", " << axis[2] << "\n\n";
+	// cout << "axis sent: " << axis[0] << ", " << axis[1] << ", " << axis[2] << "\n\n";
 	
 	for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
 		for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
@@ -624,7 +626,8 @@ bool Game::rotate_face(float angle, glm::vec3 axis, int index, map<Face, float>&
 			cube->MyTranslate(trans_vec1, 0); //translate to the center of the rubick's cube
 
 			glm::vec4 real_axis = glm::inverse(cube->get_rot()) * glm::vec4(axis, 1); //rotate the "real" x-axis by the opposite of the rotations that the cube did, this is the real x-axis as the cube sees it
-			cube->MyRotate(angle, glm::vec3(real_axis), 0); 
+			// cube->MyRotate(angle, glm::vec3(real_axis), 0); 
+			cube->MyRotate(angle, axis, 1); 
 
 			glm::mat4 trans_mat2 = glm::rotate(glm::mat4(1), angle, axis) * -trans_mat1; //take the reverse of trans_mat1 and rotate it
 			glm::vec3 trans_vec2(trans_mat2[3][0], trans_mat2[3][1], trans_mat2[3][2]);							
@@ -652,7 +655,6 @@ bool Game::rotate_face(float angle, glm::vec3 axis, int index, map<Face, float>&
 
 void Game::rotate_data_structure(char axis, int index, vector<vector<vector<Shape*>>>& new_rubicks_cube, float angle)
 {
-	//TODO: rotation over 90 degrees doesnt update the data structure properly (only does half a turn of the data structure)
 	for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
 		for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
 			if (axis == 'x') {
