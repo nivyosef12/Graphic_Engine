@@ -200,6 +200,7 @@
 			}
 			else
 			{
+				// glm::mat4 inverse_rot = glm::inverse(rot);
 				MyRotate(-xrel/2.0f,glm::vec3(0,1,0),0);
 				MyRotate(-yrel/2.0f,glm::vec3(1,0,0),0);
 				WhenRotate(-yrel/2.0f, -xrel/2.0f);

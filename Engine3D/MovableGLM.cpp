@@ -37,7 +37,11 @@ void MovableGLM::MyTranslate(glm::vec3 delta,int mode)
 
 void  MovableGLM::MyRotate(float angle,glm::vec3 &vec,int mode)
 {
-	rot = glm::rotate(rot,angle,vec);
+	if (mode == 1)
+		rot = glm::rotate(rot,angle,glm::normalize(glm::vec3(rot * glm::vec4(vec, 1))));
+	else
+		rot = glm::rotate(rot,angle,vec);
+
 }
 	
 void  MovableGLM::MyScale(glm::vec3 scale)

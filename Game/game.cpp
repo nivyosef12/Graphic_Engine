@@ -90,8 +90,8 @@ void Game::Init()
 	pickedShape = 0;
 	
 	MoveCamera(0,zTranslate,45);
-	MoveCamera(0,xTranslate,8);
-	MoveCamera(0,yTranslate,8);
+	MoveCamera(0,xTranslate,4);
+	// MoveCamera(0,yTranslate,4);
 
 	pickedShape = -1;
 
@@ -134,7 +134,8 @@ void Game::WhenRotate(float angle_x, float angle_y)
 			vector<vector<vector<Shape*>>> new_rubicks_cube = rubicks_cube;
 			rotate_data_structure('x', i, new_rubicks_cube, angle_x);
 			rubicks_cube = new_rubicks_cube;
-			angles_rotated_absolute[face_x] -= (angle_x/abs(angle_x)) * 90;
+			if (angle_x != 0)
+				angles_rotated_absolute[face_x] -= (angle_x/abs(angle_x)) * 90;
 		}
 
 		Face face_y = make_tuple('y', i);
@@ -144,7 +145,8 @@ void Game::WhenRotate(float angle_x, float angle_y)
 			vector<vector<vector<Shape*>>> new_rubicks_cube = rubicks_cube;
 			rotate_data_structure('y', i, new_rubicks_cube, angle_y);
 			rubicks_cube = new_rubicks_cube;
-			angles_rotated_absolute[face_y] -= (angle_y/abs(angle_y)) * 90;
+			if (angle_y != 0)
+				angles_rotated_absolute[face_y] -= (angle_y/abs(angle_y)) * 90;
 		}
 	}
 
@@ -239,28 +241,52 @@ void Game::my_key_callback(GLFWwindow* window, int key, int scancode, int action
 				//rotate 45 deg clockwise around the "real world's" y-axis
 				break;
 			case GLFW_KEY_R:
-				angles_rotated_relative[make_tuple('x', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
-				scn->rotate_face(ROTATION_ANGLE, cube_x_axis, RUBIKS_CUBE_SIZE-1, angles_rotated_relative);
+				if (!(glm::all(glm::equal(cube_x_axis, glm::vec3(0,0,0))))) {
+					angles_rotated_relative[make_tuple('x', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
+					scn->rotate_face(ROTATION_ANGLE, cube_x_axis, RUBIKS_CUBE_SIZE-1, angles_rotated_relative);
+				} else {
+					printf("called rotate_face with axis (0, 0, 0), key:R\n\n");
+				}
 				break;
 			case GLFW_KEY_L:
-				angles_rotated_relative[make_tuple('x', 0)] += ROTATION_ANGLE;
-				scn->rotate_face(ROTATION_ANGLE, cube_x_axis, 0, angles_rotated_relative);
+				if (!(glm::all(glm::equal(cube_x_axis, glm::vec3(0,0,0))))) {
+					angles_rotated_relative[make_tuple('x', 0)] += ROTATION_ANGLE;
+					scn->rotate_face(ROTATION_ANGLE, cube_x_axis, 0, angles_rotated_relative);
+				} else {
+					printf("called rotate_face with axis (0, 0, 0), key:L\n\n");
+				}
 				break;
 			case GLFW_KEY_U:
-				angles_rotated_relative[make_tuple('y', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
-				scn->rotate_face(ROTATION_ANGLE, cube_y_axis, RUBIKS_CUBE_SIZE-1, angles_rotated_relative);
+				if (!(glm::all(glm::equal(cube_x_axis, glm::vec3(0,0,0))))) {
+					angles_rotated_relative[make_tuple('y', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
+					scn->rotate_face(ROTATION_ANGLE, cube_y_axis, RUBIKS_CUBE_SIZE-1, angles_rotated_relative);
+				} else {
+					printf("called rotate_face with axis (0, 0, 0), key:U\n\n");
+				}
 				break;
 			case GLFW_KEY_D:
-				angles_rotated_relative[make_tuple('y', 0)] += ROTATION_ANGLE;
-				scn->rotate_face(ROTATION_ANGLE, cube_y_axis, 0, angles_rotated_relative);
+				if (!(glm::all(glm::equal(cube_x_axis, glm::vec3(0,0,0))))) {
+					angles_rotated_relative[make_tuple('y', 0)] += ROTATION_ANGLE;
+					scn->rotate_face(ROTATION_ANGLE, cube_y_axis, 0, angles_rotated_relative);
+				} else {
+					printf("called rotate_face with axis (0, 0, 0), key:D\n\n");
+				}
 				break;
 			case GLFW_KEY_B:
-				angles_rotated_relative[make_tuple('z', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
-				scn->rotate_face(ROTATION_ANGLE, cube_z_axis, RUBIKS_CUBE_SIZE-1, angles_rotated_relative);
+				if (!(glm::all(glm::equal(cube_x_axis, glm::vec3(0,0,0))))) {
+					angles_rotated_relative[make_tuple('z', RUBIKS_CUBE_SIZE-1)] += ROTATION_ANGLE;
+					scn->rotate_face(ROTATION_ANGLE, cube_z_axis, RUBIKS_CUBE_SIZE-1, angles_rotated_relative);
+				} else {
+					printf("called rotate_face with axis (0, 0, 0), key:B\n\n");
+				}
 				break;
 			case GLFW_KEY_F:
-				angles_rotated_relative[make_tuple('z', 0)] += ROTATION_ANGLE;
-				scn->rotate_face(ROTATION_ANGLE, cube_z_axis, 0, angles_rotated_relative);
+				if (!(glm::all(glm::equal(cube_x_axis, glm::vec3(0,0,0))))) {
+					angles_rotated_relative[make_tuple('z', 0)] += ROTATION_ANGLE;
+					scn->rotate_face(ROTATION_ANGLE, cube_z_axis, 0, angles_rotated_relative);
+				} else {
+					printf("called rotate_face with axis (0, 0, 0), key:F\n\n");
+				}
 				break;
 			case GLFW_KEY_SPACE:
 				ROTATION_ANGLE *= -1;
@@ -391,28 +417,30 @@ void Game::rotate_cube_axes(glm::vec3 axis)
 {
 	glm::mat4 rotation_mat = glm::rotate(glm::mat4(1), WHOLE_CUBE_ROTATION_ANGLE, axis);
 	cube_center_rot = rotation_mat * cube_center_rot;
-	cube_x_axis = glm::vec3(rotation_mat * glm::vec4(cube_x_axis, 1));
-	cube_y_axis = glm::vec3(rotation_mat * glm::vec4(cube_y_axis, 1));
-	cube_z_axis = glm::vec3(rotation_mat * glm::vec4(cube_z_axis, 1));		
+	cube_x_axis = glm::normalize(glm::vec3(rotation_mat * glm::vec4(cube_x_axis, 1)));
+	cube_y_axis = glm::normalize(glm::vec3(rotation_mat * glm::vec4(cube_y_axis, 1)));
+	cube_z_axis = glm::normalize(glm::vec3(rotation_mat * glm::vec4(cube_z_axis, 1)));		
 }
 
 void Game::switch_cube_axes(char axis, float angle)
 {
-	float sign = angle/abs(angle);
-		glm::vec3 tmp;
-		if (axis == 'x') {
-			tmp = cube_y_axis;
-			cube_y_axis = -sign * cube_z_axis;
-			cube_z_axis = sign * tmp;
-		} else if (axis == 'y') {
-			tmp = cube_z_axis;
-			cube_z_axis = -sign * cube_x_axis;
-			cube_x_axis = sign * tmp;
-		} else {
-			tmp = cube_x_axis;
-			cube_x_axis = -sign * cube_y_axis;
-			cube_y_axis = sign * tmp;	
-		}
+	if (angle != 0) {
+		float sign = angle/abs(angle);
+			glm::vec3 tmp;
+			if (axis == 'x') {
+				tmp = cube_y_axis;
+				cube_y_axis = -sign * cube_z_axis;
+				cube_z_axis = sign * tmp;
+			} else if (axis == 'y') {
+				tmp = cube_z_axis;
+				cube_z_axis = -sign * cube_x_axis;
+				cube_x_axis = sign * tmp;
+			} else {
+				tmp = cube_x_axis;
+				cube_x_axis = -sign * cube_y_axis;
+				cube_y_axis = sign * tmp;	
+			}
+	}
 }
 
 void Game::rotate_cube(float angle, glm::vec3 axis)
@@ -503,7 +531,8 @@ bool Game::rotate_face(float angle, glm::vec3 axis, int index, map<Face, float>&
 		vector<vector<vector<Shape*>>> new_rubicks_cube = rubicks_cube;
 		rotate_data_structure(rotation_axis, index, new_rubicks_cube, angle);
 		rubicks_cube = new_rubicks_cube;
-		angles_rotated[face] -= (angle/abs(angle)) * 90;
+		if (angle != 0)
+			angles_rotated[face] -= (angle/abs(angle)) * 90;
 	}
 
 	if (prev_angle > 90) {
