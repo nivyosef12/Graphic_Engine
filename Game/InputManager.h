@@ -57,15 +57,16 @@
 	void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 	{
 		Game *scn = (Game*)glfwGetWindowUserPointer(window);
-
+		glm::vec3 cube_x_axis(1, 0, 0);
+		glm::vec3 cube_y_axis(0, 1, 0);
 		scn->UpdatePosition((float)xpos,(float)ypos);
 		if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 		{
-			scn->MouseProccessing(GLFW_MOUSE_BUTTON_RIGHT);
+			scn->MouseProccessing(GLFW_MOUSE_BUTTON_RIGHT, cube_x_axis, cube_y_axis);
 		}
 		else if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		{
-			scn->MouseProccessing(GLFW_MOUSE_BUTTON_LEFT);
+			scn->MouseProccessing(GLFW_MOUSE_BUTTON_LEFT, cube_x_axis, cube_y_axis);
 		}
 
 	}

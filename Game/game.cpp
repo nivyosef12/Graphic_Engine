@@ -1,6 +1,7 @@
 // TODO
 // 1. override or implement wrappin funtion to MyRotate --> 
 //                                       --> something like MyRotate(cube_x, cube_y){ call MyRotate with cube_x, cube_y}
+// 2. 
 
 #include "game.h"
 #include <iostream>
@@ -15,11 +16,13 @@ using namespace std;
 const double pi = 3.14159265358979323846;
 
 //parameters:
-float RUBIKS_CUBE_SIZE = 5.f;
+float RUBIKS_CUBE_SIZE = 3.f;
 float CUBE_SIZE = 2.f;
 // static vector<vector<vector<Shape*>>> rubicks_cube;
 float ROTATION_ANGLE = 45;
 float WHOLE_CUBE_ROTATION_ANGLE = 45;
+float x_pos_mouse_press = -1.f;
+float y_pos_mouse_press = -1.f;
 glm::mat4 cube_center_trans(1);
 glm::mat4 cube_center_rot(1);
 glm::mat4 cube_center_scl(1); 
@@ -127,18 +130,29 @@ void Game::WhenRotate(float angle_x, float angle_y)
 	bool should_switch_axes_y = true; 
 	for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
 		Face face_x = make_tuple('x', i);
-		bool cond = angles_rotated_absolute[face_x] >= 45 || angles_rotated_absolute[face_x] <= -45;
+
+		float sign_x = 0.f;
+		if (angle_x != 0)
+			sign_x = (angle_x/abs(angle_x));
+
+		bool cond = sign_x != 0 && (angles_rotated_absolute[face_x] >= 45 || angles_rotated_absolute[face_x] <= -45);
 		should_switch_axes_x &= cond;
 		if (cond) {
 			vector<vector<vector<Shape*>>> new_rubicks_cube = rubicks_cube;
 			rotate_data_structure('x', i, new_rubicks_cube, angle_x);
 			rubicks_cube = new_rubicks_cube;
-			angles_rotated_absolute[face_x] -= (angle_x/abs(angle_x)) * 90;
+			angles_rotated_absolute[face_x] -= sign_x * 90;
 		}
 
 		Face face_y = make_tuple('y', i);
-		cond = angles_rotated_absolute[face_y] >= 45 || angles_rotated_absolute[face_y] <= -45;
+
+		float sign_y = 0.f;
+		if (angle_y != 0)
+			sign_y = (angle_y/abs(angle_y));
+
+		cond = sign_y != 0 && (angles_rotated_absolute[face_y] >= 45 || angles_rotated_absolute[face_y] <= -45);
 		should_switch_axes_y &= cond;
+		
 		if (cond) {
 			vector<vector<vector<Shape*>>> new_rubicks_cube = rubicks_cube;
 			rotate_data_structure('y', i, new_rubicks_cube, angle_y);
@@ -327,6 +341,9 @@ void Game::my_mouse_callback(GLFWwindow* window,int button, int action, int mods
 		Game *scn = (Game*)glfwGetWindowUserPointer(window);
 		double x2,y2;
 		glfwGetCursorPos(window,&x2,&y2);
+		x_pos_mouse_press = x2;
+		y_pos_mouse_press = y2;
+		printf("press pos (%f, %f)\n", x2, y2);
 		scn->Picking((int)x2,(int)y2);
 	}
 }
@@ -334,15 +351,19 @@ void Game::my_mouse_callback(GLFWwindow* window,int button, int action, int mods
 void Game::my_cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	Game *scn = (Game*)glfwGetWindowUserPointer(window);
-
+	printf("cursor pos (%f, %f)\n", xpos, ypos);
 	scn->UpdatePosition((float)xpos,(float)ypos);
+
+	// moving cube
 	if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
-		scn->MouseProccessing(GLFW_MOUSE_BUTTON_RIGHT);
+		scn->MouseProccessing(GLFW_MOUSE_BUTTON_RIGHT, cube_x_axis, cube_y_axis);
 	}
+
+	// rotating cube
 	else if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 	{
-		scn->MouseProccessing(GLFW_MOUSE_BUTTON_LEFT);
+		scn->MouseProccessing(GLFW_MOUSE_BUTTON_LEFT, cube_x_axis, cube_y_axis);
 	}
 
 }
