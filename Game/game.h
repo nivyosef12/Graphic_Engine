@@ -24,15 +24,16 @@ public:
     static void my_mouse_callback(GLFWwindow *window, int button, int action, int mods);
     static void my_cursor_position_callback(GLFWwindow *window, double xpos, double ypos);
     static void my_scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
-    void shuffle(GLFWwindow* window);
+    void generate(GLFWwindow* window);
     void solve(GLFWwindow *window);
-    int recursive_solve(GLFWwindow *window, vector<vector<vector<Shape *>>> rubicks_cube_copy, map<vector<vector<vector<Shape*>>>, int> &memo, vector<int> &keys);
-    void rotate_cube_axes(glm::vec3 axis, float angle);
+	int recursive_solve(GLFWwindow* window, map<vector<vector<vector<Shape*>>>, tuple<int, tuple<char, int, float, int>>>& memo, vector<tuple<char, int, float, int>>& steps);
+	void rotate_cube_axes(glm::vec3 axis, float angle);
     void switch_cube_axes(char axis, float angle);
     void rotate_cube(float angle, glm::vec3 axis);
     vector<vector<vector<Shape*>>> make_cube();
     bool rotate_face(float angle, glm::vec3 axis, int index, map<Face, float>& angles_rotated);
 	void rotate_data_structure(char axis, int index, vector<vector<vector<Shape*>>>& new_rubicks_cube, float angle);
+	void rotate_data_structure2(char axis, int index, vector<vector<vector<Shape*>>>& new_rubicks_cube, vector<vector<vector<Shape*>>>& prev_rubicks_cube, float angle);
 	~Game(void);
 
 private:
