@@ -6,6 +6,7 @@
 using namespace std;
 
 typedef tuple<char, int> Face;
+typedef tuple<vector<vector<vector<Shape*>>>, int, float> CubeState;
 
 class Game : public Scene
 {
@@ -24,6 +25,8 @@ public:
     static void my_cursor_position_callback(GLFWwindow *window, double xpos, double ypos);
     static void my_scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
     void shuffle(GLFWwindow* window);
+    void solve(GLFWwindow *window);
+    int recursive_solve(GLFWwindow *window, vector<vector<vector<Shape *>>> rubicks_cube_copy, map<vector<vector<vector<Shape*>>>, int> &memo, vector<int> &keys);
     void rotate_cube_axes(glm::vec3 axis, float angle);
     void switch_cube_axes(char axis, float angle);
     void rotate_cube(float angle, glm::vec3 axis);

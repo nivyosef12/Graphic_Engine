@@ -4,6 +4,7 @@
         "cmath": "cpp",
         "map": "cpp",
         "iostream": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "tuple": "cpp"
     }
 }
