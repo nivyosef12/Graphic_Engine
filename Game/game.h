@@ -33,7 +33,6 @@ public:
     vector<vector<vector<Shape*>>> make_cube();
     bool rotate_face(float angle, glm::vec3 axis, int index, map<Face, float>& angles_rotated);
 	void rotate_data_structure(char axis, int index, vector<vector<vector<Shape*>>>& new_rubicks_cube, float angle);
-	void rotate_data_structure2(char axis, int index, vector<vector<vector<Shape*>>>& new_rubicks_cube, vector<vector<vector<Shape*>>>& prev_rubicks_cube, float angle);
 	~Game(void);
 
 private:

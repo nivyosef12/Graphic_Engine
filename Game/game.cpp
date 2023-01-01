@@ -718,33 +718,6 @@ void Game::rotate_data_structure(char axis, int index, vector<vector<vector<Shap
 	}
 }
 
-void Game::rotate_data_structure2(char axis, int index, vector<vector<vector<Shape*>>>& new_rubicks_cube, vector<vector<vector<Shape*>>>& prev_rubicks_cube, float angle)
-{
-	for (int j = 0; j < RUBIKS_CUBE_SIZE; j++) {
-		for (int i = 0; i < RUBIKS_CUBE_SIZE; i++) {
-			if (axis == 'x') {
-				Shape* cube = prev_rubicks_cube[index][i][j];
-				if (angle < 0)
-					new_rubicks_cube[index][RUBIKS_CUBE_SIZE-1 - j][i] = cube;
-				else
-					new_rubicks_cube[index][j][RUBIKS_CUBE_SIZE-1 - i] = cube;
-			} else if (axis == 'y') {
-				Shape* cube = prev_rubicks_cube[i][index][j];
-				if (angle > 0)
-					new_rubicks_cube[RUBIKS_CUBE_SIZE-1 - j][index][i] = cube;
-				else 
-					new_rubicks_cube[j][index][RUBIKS_CUBE_SIZE-1 - i] = cube;
-			} else {
-				Shape* cube = prev_rubicks_cube[i][j][index];
-				if (angle > 0)
-					new_rubicks_cube[RUBIKS_CUBE_SIZE-1 - j][i][index] = cube;
-				else
-					new_rubicks_cube[j][RUBIKS_CUBE_SIZE-1 - i][index] = cube;
-			} 
-		}
-	}
-}
-
 Game::~Game(void)
 {
 }
