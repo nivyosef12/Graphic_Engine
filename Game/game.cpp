@@ -1,6 +1,7 @@
 #include "game.h"
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Bezier1D.h"
 
 static void printMat(const glm::mat4 mat)
 {
@@ -29,7 +30,9 @@ void Game::Init()
 	
 	AddTexture("../res/textures/box0.bmp",false);
 
-	AddShape(Plane,-1,TRIANGLES);
+	AddShape(Cube,-1,TRIANGLES);
+	shapes.push_back(new Bezier1D(6, 6, 1));
+
 	
 	pickedShape = 0;
 	

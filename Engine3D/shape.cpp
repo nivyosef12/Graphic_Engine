@@ -38,6 +38,17 @@ Shape::Shape(const int SimpleShapeType,unsigned int mode)
 }
 
 
+Shape::Shape(MeshConstructor *mesh, unsigned int mode)
+{
+	this->mesh = mesh;
+	this->mode = mode;
+	isCopy = false;
+	toRender = true;
+	texID = -1;
+	shaderID = 1;
+}
+
+
 void Shape::Draw( const std::vector<Shader*> shaders, const std::vector<Texture*> textures,bool isPicking)
 {
 	if(texID>=0)
