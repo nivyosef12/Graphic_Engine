@@ -1,10 +1,21 @@
 //#define GLEW_STATIC
-#include "glad/include/glad/glad.h"
+//#include <GL\glew.h>
 #include "MeshConstructor.h"
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
 #include "obj_loader.h"
 
+#define GL_FLOAT 0x1406
+
+//MeshConstructor::MeshConstructor( Bezier1D* c)
+//{
+//	InitLine(c->GetLine());
+//}
+//
+//MeshConstructor::MeshConstructor(Bezier2D* surf)
+//{
+//	InitMesh(surf->GetSurface());
+//}
 
 MeshConstructor::MeshConstructor(const int type)
 {
@@ -36,6 +47,14 @@ MeshConstructor::MeshConstructor(const std::string& fileName)
 	InitMesh(OBJModel(fileName).ToIndexedModel());
 }
 
+MeshConstructor::MeshConstructor(const IndexedModel& model, bool isMesh)
+{
+	if (isMesh)
+		InitMesh(model);
+	else
+		InitLine(model);
+}
+
 
 MeshConstructor::MeshConstructor(const MeshConstructor &mesh)
 {
@@ -57,7 +76,7 @@ MeshConstructor::~MeshConstructor(void)
 	}
 }
 
-void MeshConstructor::InitLine(IndexedModel &model){
+void MeshConstructor::InitLine(const IndexedModel &model){
 	
 	int verticesNum = model.positions.size();
 	indicesNum = model.indices.size();
@@ -74,10 +93,9 @@ void MeshConstructor::InitLine(IndexedModel &model){
 	
 	vao.Unbind();
 	is2D = false;
-	
 }
 
-void MeshConstructor::InitMesh( IndexedModel &model){
+void MeshConstructor::InitMesh(const IndexedModel &model){
 
 	int verticesNum = model.positions.size();
 	indicesNum = model.indices.size();
@@ -118,6 +136,26 @@ void MeshConstructor::CopyLine(const MeshConstructor &mesh){
 
 	is2D = false;
 	
+}
+
+void MeshConstructor::ChangeLine(const IndexedModel& model)
+{
+	int verticesNum = model.positions.size(); // to change only part of the line
+	//indicesNum = model.indices.size();
+
+	vao.Bind();
+
+	for (int i = 0; i < 1; i++) //to add a dirty flag
+	{
+		vbs.push_back(new VertexBuffer(model.GetData(i), verticesNum * sizeof(model.positions[0])));
+		vao.AddBuffer(*vbs.back(), i, 3, GL_FLOAT);
+	}
+	indicesNum = model.positions.size();
+
+//	ib = new IndexBuffer((unsigned int*)model.GetData(VEC2_ATTRIB_NUM + VEC3_ATTRIB_NUM), indicesNum);
+
+	vao.Unbind();
+
 }
 
 void MeshConstructor::CopyMesh(const MeshConstructor &mesh){
