@@ -1,10 +1,14 @@
 #include "Bezier1D.h"
 #include "MeshConstructor.h"
+#include <iostream>
+#include <cstdio>
 
 //parameters:
 int points_per_segment = 20;
 
+/*
 Bezier1D::Bezier1D(int segNum,int res,int mode, int viewport): 
+    //printf("1\n");
     segmentsNum(segNum),
     resT(res),
     M(
@@ -20,10 +24,25 @@ Bezier1D::Bezier1D(int segNum,int res,int mode, int viewport):
 { 
     int x = 2;
 }
+*/
+
+Bezier1D::Bezier1D(int segNum, int res, int mode, int viewport) : Shape(1)
+{
+    this->segmentsNum = segNum;   
+    this->resT = res; 
+    this->M = glm::mat4(
+            -1, 3, -3, 1,
+            3, -6, 3, 0,
+            -3, 3, 0, 0,
+            1, 0, 0, 0
+        );
+    this->segments = BuildSegments(); //build the segments
+    this->setMesh(new MeshConstructor(GetLine(), false));
+
+}
 
 std::vector<glm::mat4> Bezier1D::BuildSegments()
 {
-    
     std::vector<glm::mat4> segments;
     //first segment
     glm::vec4 p0(0, 0, 0, 0);
@@ -32,7 +51,8 @@ std::vector<glm::mat4> Bezier1D::BuildSegments()
     glm::vec4 p3(2, 2, 0, 0);
     glm::mat4 seg1(p0, p1, p2, p3);
     segments.push_back(seg1);
-
+    
+    // throw exption for resT = 2
     for (int i = 0; i < resT - 2; i++) {
         //ith segment
         p0 = segments.back()[3];

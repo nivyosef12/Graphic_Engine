@@ -21,6 +21,7 @@ protected:
 	MeshConstructor *mesh;
 
 public:
+	Shape(unsigned int mode);
 
 	Shape(const Shape& shape,unsigned int mode);
 
@@ -47,6 +48,8 @@ public:
 	inline int GetShader(){return shaderID;}
 
 	inline int GetTexture(){return texID;}
+
+	void setMesh(MeshConstructor *new_mesh){this->mesh = new_mesh;}
 
 	virtual ~Shape(void);
 };
