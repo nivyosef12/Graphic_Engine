@@ -29,7 +29,7 @@ void Game::Init()
 	AddShader("../res/shaders/basicShader");
 	
 	AddTexture("../res/textures/box0.bmp",false);
-	AddShape(Cube,-1,TRIANGLES);
+	// AddShape(Cube,-1,TRIANGLES);
 
 	// TODO what is the diff?
 	int segNum = 6;
@@ -39,8 +39,12 @@ void Game::Init()
 		for(int j = 0; j < 4; j++){
 			glm::vec4 curr_point = bezier->GetControlPoint(i, j);
 			AddShape(Octahedron, -1, TRIANGLES);
-			shapes[i + j + 1]->MyTranslate(glm::vec3(curr_point[0], curr_point[1], curr_point[2] - 15), 0);
-			printf("(%f, %f, %f, %f\n", curr_point[0], curr_point[1], curr_point[2], curr_point[3]);
+			// value = (((number - min_value) * (2 + 2)) / (max_value - min_value)) - 2
+			float x_offset = (((curr_point[0] - 0) * (2)) / (16.f - 0));
+			float y_offset = (((curr_point[1] - 0) * (2)) / (2.f - 0));
+			printf("\n\ncurr point : (%f, %f, %f, %f\n", curr_point[0], curr_point[1], curr_point[2], curr_point[3]);
+			printf("translate vec: (%f, %f, %f)\n\n", 0 + x_offset, 0 + y_offset, curr_point[2]);
+			shapes[i + j]->MyTranslate(glm::vec3(0 + x_offset, 0 + y_offset, curr_point[2]), 0);
 		}
 	}
 	shapes.push_back(bezier);

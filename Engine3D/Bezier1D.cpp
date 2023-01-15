@@ -25,7 +25,7 @@ Bezier1D::Bezier1D(int segNum,int res,int mode, int viewport):
     int x = 2;
 }
 */
-
+// TODO: diff between segNum and res
 Bezier1D::Bezier1D(int segNum, int res, int mode, int viewport) : Shape(1)
 {
     this->segmentsNum = segNum;   
