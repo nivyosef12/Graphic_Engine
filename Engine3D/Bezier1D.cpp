@@ -5,6 +5,7 @@
 
 //parameters:
 int points_per_segment = 20;
+float curve_scale = 2;
 
 /*
 Bezier1D::Bezier1D(int segNum,int res,int mode, int viewport): 
@@ -45,10 +46,10 @@ std::vector<glm::mat4> Bezier1D::BuildSegments()
 {
     std::vector<glm::mat4> segments;
     //first segment
-    glm::vec4 p0(0, 0, 0, 0);
-    glm::vec4 p1(0, 1, 0, 0);
-    glm::vec4 p2(1, 2, 0, 0);
-    glm::vec4 p3(2, 2, 0, 0);
+    glm::vec4 p0 = curve_scale * glm::vec4(0, 0, 0, 0);
+    glm::vec4 p1 = curve_scale * glm::vec4(0, 1.5, 0, 0);
+    glm::vec4 p2 = curve_scale * glm::vec4(0.5, 2, 0, 0);
+    glm::vec4 p3 = curve_scale * glm::vec4(2, 2, 0, 0);
     glm::mat4 seg1(p0, p1, p2, p3);
     segments.push_back(seg1);
     
@@ -56,18 +57,18 @@ std::vector<glm::mat4> Bezier1D::BuildSegments()
     for (int i = 0; i < resT - 2; i++) {
         //ith segment
         p0 = segments.back()[3];
-        p1 = p0 + glm::vec4(1, 0, 0, 0);
-        p2 = p1 + glm::vec4(1, 0, 0, 0);
-        p3 = p2 + glm::vec4(1, 0, 0, 0);
+        p1 = p0 + curve_scale * glm::vec4(1, 0, 0, 0);
+        p2 = p1 + curve_scale * glm::vec4(1, 0, 0, 0);
+        p3 = p2 + curve_scale * glm::vec4(1, 0, 0, 0);
         glm::mat4 segI(p0, p1, p2, p3);
         segments.push_back(segI);
     }
 
     //last segment
     p0 = segments.back()[3];
-    p1 = p0 + glm::vec4(1, 0, 0, 0);
-    p2 = p1 + glm::vec4(1, -1, 0, 0);
-    p3 = p2 + glm::vec4(0, -1, 0, 0);
+    p1 = p0 + curve_scale * glm::vec4(1.5, 0, 0, 0);
+    p2 = p1 + curve_scale * glm::vec4(0.5, -0.5, 0, 0);
+    p3 = p2 + curve_scale * glm::vec4(0, -1.5, 0, 0);
     glm::mat4 segN(p0, p1, p2, p3);
     segments.push_back(segN);
 
@@ -82,14 +83,17 @@ IndexedModel Bezier1D::GetLine() const
     for (int i = 0; i < segmentsNum; i++) {
         for (int t = 0; t < points_per_segment; t++) {
             glm::vec4 point = GetPointOnCurve(i, t); //calculate le position of the point on the curve
-            model.positions.push_back(glm::vec3(point.x,point.y,point.z)); //add it to the model
-            model.colors.push_back(glm::vec3(1,1,1)); //make the point black
-            if (t != 0) {
-                model.indices.push_back(i*points_per_segment + t - 1);
-                model.indices.push_back(i*points_per_segment + t); //add the previous point and current point to indices (this makes sure all points are connected in the scene)  
-            } else {
-                model.indices.push_back(i*points_per_segment + t); //if it's the first point, add only it  
-            }
+            printf("(%f, %f, %f),\n", point.x, point.y, point.z);
+            LineVertex lv(glm::vec3(point.x, point.y, point.z), glm::vec3(1,1,1));
+            axisVertices.push_back(lv);
+            model.positions.push_back(*lv.GetPos()); //add position to the model
+            model.colors.push_back(*lv.GetColor()); //add color to the model
+            // if (i == 0 && t == 0) {
+                model.indices.push_back(i*points_per_segment + t); //if it's the first point, add only it 
+            // } else {
+            //     model.indices.push_back(i*points_per_segment + t - 1); 
+            //     model.indices.push_back(i*points_per_segment + t); //add the previous point and current point to indices (this makes sure all points are connected in the scene)  
+            // }
         }
     }
 
@@ -103,11 +107,11 @@ glm::vec4 Bezier1D::GetControlPoint(int segment, int indx) const
     return segments[segmentsNum - 1][3];
 }
 
-glm::vec4 Bezier1D::GetPointOnCurve(int segment, int t) const
+glm::vec4 Bezier1D::GetPointOnCurve(int segment, float t) const
 {
     t/=points_per_segment;
     glm::vec4 T(std::pow(t, 3), std::pow(t, 2), t, 1);
-    glm::vec4 point = T * M * segments[segment];
+    glm::vec4 point = T * M * glm::transpose(segments[segment]);
     return point;
 }
 
