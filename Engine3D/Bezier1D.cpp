@@ -81,9 +81,9 @@ IndexedModel Bezier1D::GetLine() const
 
     std::vector<LineVertex> axisVertices;
     for (int i = 0; i < segmentsNum; i++) {
-        for (int t = 0; t < points_per_segment; t++) {
-            glm::vec4 point = GetPointOnCurve(i, t); //calculate le position of the point on the curve
-            printf("(%f, %f, %f),\n", point.x, point.y, point.z);
+        for (float t = 0; t < points_per_segment; t++) {
+            glm::vec4 point = GetPointOnCurve(i, t/points_per_segment); //calculate le position of the point on the curve
+            // printf("(%f, %f, %f),\n", point.x, point.y, point.z);
             LineVertex lv(glm::vec3(point.x, point.y, point.z), glm::vec3(1,1,1));
             axisVertices.push_back(lv);
             model.positions.push_back(*lv.GetPos()); //add position to the model
@@ -109,9 +109,11 @@ glm::vec4 Bezier1D::GetControlPoint(int segment, int indx) const
 
 glm::vec4 Bezier1D::GetPointOnCurve(int segment, float t) const
 {
-    t/=points_per_segment;
+    // t/=points_per_segment;
     glm::vec4 T(std::pow(t, 3), std::pow(t, 2), t, 1);
-    glm::vec4 point = T * M * glm::transpose(segments[segment]);
+    glm::mat4 seg = segments[segment];
+    glm::vec4 point = T * M * glm::transpose(seg);
+    // printf("(%f, %f, %f)\n", point.x, point.y, point.z);
     return point;
 }
 
@@ -149,6 +151,16 @@ void Bezier1D::CurveUpdate(int pointIndx, float dx, float dy, bool preserveC1)
 void Bezier1D::ResetCurve(int segNum)
 {
 
+}
+
+int Bezier1D::GetSegmentsNum()
+{
+    return segmentsNum;
+}
+
+int Bezier1D::GetResT()
+{
+    return resT;
 }
 
 Bezier1D::~Bezier1D(void)

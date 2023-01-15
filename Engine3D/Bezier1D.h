@@ -24,6 +24,8 @@ public:
 	void ChangeSegment(int segIndx, glm::vec4 p1, glm::vec4 p2, glm::vec4 p3); // changes three control point of a segment
 	void ResetCurve(int segNum); // to the init state
 	inline int GetSegmentsNum() const { return segmentsNum; }
+	int GetSegmentsNum();
+	int GetResT();
 	~Bezier1D(void);
 };
 

@@ -2,9 +2,15 @@
 #include <iostream>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Bezier1D.h"
+#include <thread>
+#include <chrono>
 
 //params:
-static bool should_move = false;
+int seg = 0;
+float t = 0;
+float t_increment = 0.0001;
+int seg_increment = 1;
+Bezier1D* b;
 
 static void printMat(const glm::mat4 mat)
 {
@@ -32,33 +38,30 @@ void Game::Init()
 	AddShader("../res/shaders/basicShader");
 	
 	AddTexture("../res/textures/box0.bmp",false);
-	// AddShape(Cube,-1,TRIANGLES);
+
+	seg = 0;
+	t = 0;
+	t_increment = 0.1;
+	seg_increment = 1;
 
 	// TODO what is the diff?
 	int segNum = 4;
 	int res = 4;
 	Bezier1D *bezier = new Bezier1D(segNum, res, 1);
+	b = bezier;
 	float octahedron_scale = 0.25;
 	AddShape(Octahedron, -1, TRIANGLES);
-	// shapes[0]->MyTranslate(glm::vec3(0, 0, 0), 0);
 	shapes[0]->MyScale(glm::vec3(octahedron_scale, octahedron_scale, octahedron_scale));
 	for(int i = 0; i < segNum; i++){
 		for(int j = 1; j < 4; j++){
 			glm::vec4 curr_point = bezier->GetControlPoint(i, j);
-			printf("\n\n\nsegment %i, ctrl point %i\n(%f,%f,%f)\n\n\n", i, j, curr_point.x, curr_point.y, curr_point.z);
+			// printf("\n\n\nsegment %i, ctrl point %i\n(%f,%f,%f)\n\n\n", i, j, curr_point.x, curr_point.y, curr_point.z);
 			AddShapeCopy(0, -1, TRIANGLES);
 			shapes.back()->MyTranslate(glm::vec3(curr_point.x, curr_point.y, curr_point.z), 0);
 			shapes.back()->MyScale(glm::vec3(octahedron_scale, octahedron_scale, octahedron_scale));
-
-			// value = (((number - min_value) * (2 + 2)) / (max_value - min_value)) - 2
-			// float x_offset = (((curr_point[0] - 0) * (2)) / (16.f - 0));
-			// float y_offset = (((curr_point[1] - 0) * (2)) / (2.f - 0));
-			// printf("\n\ncurr point : (%f, %f, %f, %f\n", curr_point[0], curr_point[1], curr_point[2], curr_point[3]);
-			// printf("translate vec: (%f, %f, %f)\n\n", 0 + x_offset, 0 + y_offset, curr_point[2]);
 		}
 	}
 	shapes.push_back(bezier);
-	// shapes.push_back(new Bezier1D(6, 6, 1));
 	AddShape(Cube, -1, TRIANGLES);
 
 	
@@ -168,20 +171,36 @@ void Game::WhenTranslate()
 
 void Game::Motion()
 {
-	Bezier1D *b = (Bezier1D*) shapes[0];
+	// Bezier1D *b = (Bezier1D*) shapes[0];
 	Shape *cube = shapes.back();
-	int seg = 0;
-	float t = 0;
-	float increment = 0.1;
+	int segNum = b->GetSegmentsNum();
 	if(isActive)
 	{
-		if (t >= 1) {
+		t += t_increment;
+		if (t_increment > 0 && t >= 1) {
 			t = 0;
 			seg += 1;
+		} else if (t_increment < 0 && t <= 0) {
+			t = 1;
+			seg -= 1;
+		}
+		
+		if (seg == segNum) {
+			seg -= 1;
+			t = 1;
+			t_increment *= -1;
 		}
 
-		cube->MyTranslate(glm::vec3(0.05,0,0), 0);
+		if (seg < 0) {
+			seg = 0;
+			t = 0;
+			t_increment *= -1;
+		}
 
+		glm::vec4 point = b->GetPointOnCurve(seg, t);
+		cube->MyTranslate(glm::vec3(), 1);
+		cube->MyTranslate(glm::vec3(point.x, point.y, point.z), 0);
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
 }
 

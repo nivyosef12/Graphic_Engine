@@ -32,6 +32,9 @@ glm::mat4 MovableGLM::MakeTrans() const
 
 void MovableGLM::MyTranslate(glm::vec3 delta,int mode)
 {
+	if (mode == 1) {
+		trans = glm::mat4(1); //return to origin
+	}
 	trans = glm::translate(trans,delta);
 }
 
