@@ -29,9 +29,22 @@ void Game::Init()
 	AddShader("../res/shaders/basicShader");
 	
 	AddTexture("../res/textures/box0.bmp",false);
-
 	AddShape(Cube,-1,TRIANGLES);
-	shapes.push_back(new Bezier1D(6, 6, 1));
+
+	// TODO what is the diff?
+	int segNum = 6;
+	int res = 6;
+	Bezier1D *bezier = new Bezier1D(segNum, res, 1);
+	for(int i = 0; i < segNum; i++){
+		for(int j = 0; j < 4; j++){
+			glm::vec4 curr_point = bezier->GetControlPoint(i, j);
+			AddShape(Octahedron, -1, TRIANGLES);
+			shapes[i + j + 1]->MyTranslate(glm::vec3(curr_point[0], curr_point[1], curr_point[2] - 15), 0);
+			printf("(%f, %f, %f, %f\n", curr_point[0], curr_point[1], curr_point[2], curr_point[3]);
+		}
+	}
+	shapes.push_back(bezier);
+	// shapes.push_back(new Bezier1D(6, 6, 1));
 
 	
 	pickedShape = 0;
