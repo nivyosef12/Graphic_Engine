@@ -173,7 +173,7 @@ void Game::MyCursorPositionCallback(GLFWwindow* window, double xpos, double ypos
 		}
 	} else {
 		Shape* control_point = control_points[selected_control_point];
-		if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+		if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		{				
 
 			// control_point->MyTranslate(glm::vec3(-(scn->xrel)/40.0f,0,0),0);
