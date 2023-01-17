@@ -117,9 +117,11 @@ glm::vec4 Bezier1D::GetPointOnCurve(int segment, float t) const
     return point;
 }
 
-glm::vec3 Bezier1D::GetVelosity(int segment, int t)
+glm::vec4 Bezier1D::GetVelocity(int segment, float t)
 {
-    return glm::vec3();
+    glm::vec4 dT(3 * std::pow(t, 2), 2 * t, 1, 0);
+    glm::vec4 vel = dT * M * glm::transpose(segments[segment]);
+    return vel;
 }
 
 // void Bezier1D::SplitSegment(int segment, int t)
@@ -140,6 +142,20 @@ void Bezier1D::ChangeSegment(int segIndx,glm::vec4 p1, glm::vec4 p2, glm::vec4 p
 
 float Bezier1D::MoveControlPoint(int segment, int indx, float dx,float dy,bool preserveC1)
 {
+    glm::vec4 delta(dx, dy, 0, 0);
+    segments[segment][indx] += delta;
+    if (preserveC1) {
+        if (indx == 1 && segment != 0) {
+            segments[segment - 1][indx + 1] -= delta;
+        } else if (indx == 2 && segment != segmentsNum - 1) {
+            segments[segment + 1][indx - 1] -= delta;
+        }
+    }
+
+    this->setMesh(new MeshConstructor(GetLine(), false));
+    // Draw(1,0,BACK,true,false);
+	// glfwSwapBuffers(window);
+
     return 0; //not suppose to reach here
 }
 
@@ -153,15 +169,15 @@ void Bezier1D::ResetCurve(int segNum)
 
 }
 
-int Bezier1D::GetSegmentsNum()
-{
-    return segmentsNum;
-}
+// int Bezier1D::GetSegmentsNum()
+// {
+//     return segmentsNum;
+// }
 
-int Bezier1D::GetResT()
-{
-    return resT;
-}
+// int Bezier1D::GetResT()
+// {
+//     return resT;
+// }
 
 Bezier1D::~Bezier1D(void)
 {

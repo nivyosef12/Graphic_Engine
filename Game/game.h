@@ -14,8 +14,10 @@ public:
     static void MyCursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
     static void MyScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
     void Update(const glm::mat4 &MVP, const glm::mat4 &Model, const int shaderIndx);
-    void ControlPointUpdate();
-	void WhenRotate();
+    void SwitchControlPoint(int i);
+    void ActivateSelection();
+    void ControlPointUpdate(float dx, float dy, bool preserveC1);
+    void WhenRotate();
 	void WhenTranslate();
 	void Motion();
 	~Game(void);
