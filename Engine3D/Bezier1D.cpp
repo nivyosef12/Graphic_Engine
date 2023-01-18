@@ -37,13 +37,15 @@ Bezier1D::Bezier1D(int segNum, int res, int mode, int viewport) : Shape(1)
             -3, 3, 0, 0,
             1, 0, 0, 0
         );
-    this->segments = BuildSegments(); //build the segments
+    this->segments = BuildSegments(res, segNum); //build the segments
     this->setMesh(new MeshConstructor(GetLine(), false));
 
 }
 
-std::vector<glm::mat4> Bezier1D::BuildSegments()
+std::vector<glm::mat4> Bezier1D::BuildSegments(int resT, int segNum)
 {
+    this->resT = resT;
+    this->segmentsNum = segNum;
     std::vector<glm::mat4> segments;
     //first segment
     glm::vec4 p0 = curve_scale * glm::vec4(0, 0, 0, 0);
@@ -94,13 +96,13 @@ IndexedModel Bezier1D::GetLine() const
             //     model.indices.push_back(i*points_per_segment + t - 1); 
             //     model.indices.push_back(i*points_per_segment + t); //add the previous point and current point to indices (this makes sure all points are connected in the scene)  
             // }
-            if (( t == 0) || (t == points_per_segment - 1)) {
-                LineVertex lv2(glm::vec3(point.x, point.y, point.z), glm::vec3(1,1,1));
-                axisVertices.push_back(lv2);
-                model.positions.push_back(*lv2.GetPos()); //add position to the model
-                model.colors.push_back(*lv2.GetColor()); //add color to the model
-                model.indices.push_back(i*points_per_segment + t); //if it's the first point, add only it 
-            }
+            // if (( t == 0) || (t == points_per_segment - 1)) {
+            //     LineVertex lv2(glm::vec3(point.x, point.y, point.z), glm::vec3(1,1,1));
+            //     axisVertices.push_back(lv2);
+            //     model.positions.push_back(*lv2.GetPos()); //add position to the model
+            //     model.colors.push_back(*lv2.GetColor()); //add color to the model
+            //     model.indices.push_back(i*points_per_segment + t); //if it's the first point, add only it 
+            // }
         }
     }
 
@@ -135,10 +137,26 @@ glm::vec4 Bezier1D::GetVelocity(int segment, float t)
 // {
 // }
 
-void Bezier1D::AddSegment(glm::vec4 p1, glm::vec4 p2, glm::vec4 p3)
+void Bezier1D::AddSegments(int n)
 {
-    glm::vec4 p0 = segments.back()[3];
-    segments.push_back(glm::mat4(p0, p1, p2, p3));
+    glm::mat4 last_segment = segments.back();
+    segments.pop_back();
+    for (int i = 0; i < n; i++) {
+        glm::vec4 p0 = segments.back()[3];
+        glm::vec4 p1 = p0 + curve_scale * glm::vec4(1, 0, 0, 0);
+        glm::vec4 p2 = p1 + curve_scale * glm::vec4(1, 0, 0, 0);
+        glm::vec4 p3 = p2 + curve_scale * glm::vec4(1, 0, 0, 0);
+        segments.push_back(glm::mat4(p0, p1, p2, p3));
+    }
+    
+    glm::vec4 v(3 * curve_scale * n, 0, 0, 0);
+    last_segment += glm::mat4(v, v, v, v);
+    segments.push_back(last_segment);
+
+    resT += n;
+    segmentsNum += n;
+
+    setMesh(new MeshConstructor(GetLine(), false));
 }
 
 void Bezier1D::ChangeSegment(int segIndx,glm::vec4 p1, glm::vec4 p2, glm::vec4 p3)
@@ -151,15 +169,24 @@ float Bezier1D::MoveControlPoint(int segment, int indx, float dx,float dy,bool p
 {
     glm::vec4 delta(dx, dy, 0, 0);
     segments[segment][indx] += delta;
-    if (preserveC1) {
-        if (indx == 1 && segment != 0) {
-            segments[segment - 1][indx + 1] -= delta;
-        } else if (indx == 2 && segment != segmentsNum - 1) {
-            segments[segment + 1][indx - 1] -= delta;
+    
+    if (segment != 0) {
+        if (indx == 0) {
+            segments[segment - 1][3] += delta;
+        } else if (indx == 1 && preserveC1) {
+            segments[segment - 1][2] -= delta;
         }
     }
+    if (segment != segmentsNum - 1) {
+        if (indx == 2 && preserveC1) {
+            segments[segment + 1][1] -= delta;
+        } else if (indx == 3) {
+            segments[segment + 1][0] -= delta;
+        }
+    }
+    
 
-    this->setMesh(new MeshConstructor(GetLine(), false));
+    setMesh(new MeshConstructor(GetLine(), false));
     // Draw(1,0,BACK,true,false);
 	// glfwSwapBuffers(window);
 
@@ -168,12 +195,27 @@ float Bezier1D::MoveControlPoint(int segment, int indx, float dx,float dy,bool p
 
 void Bezier1D::CurveUpdate(int pointIndx, float dx, float dy, bool preserveC1)
 {
-    //TODO: here the IndexModel will be updated, hopefully this will show in the scene, if not we need to find a way to make the scene change
+
 }
 
-void Bezier1D::ResetCurve(int segNum)
+void Bezier1D::ResetCurve()
 {
+    segments = BuildSegments(2, 2); //build the segments
+    setMesh(new MeshConstructor(GetLine(), false));
+}
 
+glm::vec4 Bezier1D::Align(int segNum)
+{
+    glm::vec4 p0 = segments[segNum][0];
+    glm::vec4 p1 = segments[segNum][1];
+
+    glm::vec4 delta = p1 - p0;
+    glm::vec4 new_p2 = p0 - delta;
+
+    segments[segNum - 1][2] = new_p2;
+
+    setMesh(new MeshConstructor(GetLine(), false));
+    return new_p2;
 }
 
 // int Bezier1D::GetSegmentsNum()

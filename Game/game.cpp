@@ -10,10 +10,11 @@ int seg = 0;
 float t = 0;
 float t_increment = 0.0001;
 int seg_increment = 1;
-Bezier1D* b;
+Bezier1D* bezier_curve;
 std::vector<Shape*> control_points;
 int selected_control_point = 0;
 bool isSelected = false;
+bool preserveC1 = false;
 
 static void printMat(const glm::mat4 mat)
 {
@@ -52,23 +53,10 @@ void Game::Init()
 	int segNum = 3;
 	int res = 3;
 	Bezier1D *bezier = new Bezier1D(segNum, res, 1);
-	b = bezier;
-	float octahedron_scale = 0.25;
-	AddShape(Octahedron, -1, TRIANGLES);
-	shapes[0]->MyScale(glm::vec3(2*octahedron_scale, 2*octahedron_scale, 2*octahedron_scale));
-	control_points.push_back(shapes.back());
-	for(int i = 0; i < segNum; i++){
-		for(int j = 1; j < 4; j++){
-			glm::vec4 curr_point = bezier->GetControlPoint(i, j);
-			AddShapeCopy(0, -1, TRIANGLES);
-			shapes.back()->MyTranslate(glm::vec3(curr_point.x, curr_point.y, curr_point.z), 0);
-			shapes.back()->MyScale(glm::vec3(octahedron_scale, octahedron_scale, octahedron_scale));
-			control_points.push_back(shapes.back());
-		}
-	}
-	shapes.push_back(bezier);
-	AddShape(Cube, -1, TRIANGLES);
-
+	bezier_curve = bezier;
+	// shapes.push_back(bezier);
+	// AddShape(Cube, -1, TRIANGLES);
+	AddControlPoints(segNum);
 	
 	pickedShape = 0;
 	
@@ -79,6 +67,29 @@ void Game::Init()
 	pickedShape = -1;
 	
 	//ReadPixel(); //uncomment when you are reading from the z-buffer
+}
+
+void Game::AddControlPoints(int segNum)
+{
+	control_points.clear();
+	shapes.clear();
+
+	float octahedron_scale = 0.25;
+	AddShape(Octahedron, -1, TRIANGLES);
+	shapes[0]->MyScale(glm::vec3(2*octahedron_scale, 2*octahedron_scale, 2*octahedron_scale));
+	control_points.push_back(shapes.back());
+	for(int i = 0; i < segNum; i++){
+		for(int j = 1; j < 4; j++){
+			glm::vec4 curr_point = bezier_curve->GetControlPoint(i, j);
+			AddShapeCopy(0, -1, TRIANGLES);
+			shapes.back()->MyTranslate(glm::vec3(curr_point.x, curr_point.y, curr_point.z), 0);
+			shapes.back()->MyScale(glm::vec3(octahedron_scale, octahedron_scale, octahedron_scale));
+			control_points.push_back(shapes.back());
+		}
+	}
+
+	shapes.push_back(bezier_curve);
+	AddShape(Cube, -1, TRIANGLES);
 }
 
 void Game::MyKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -126,6 +137,10 @@ void Game::MyKeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				scn->ActivateSelection();
 				break;
 
+			case GLFW_KEY_C:
+				scn->ChangeContinuity();
+				break;
+
 			case GLFW_KEY_SPACE:
 				if (scn->isActive) {
 					scn->Deactivate();
@@ -134,7 +149,30 @@ void Game::MyKeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				}
 				break;
 			case GLFW_KEY_2:
+				bezier_curve->ResetCurve();
+				scn->AddControlPoints(2);
+				break;
 
+			case GLFW_KEY_3:
+				bezier_curve->ResetCurve();
+				bezier_curve->AddSegments(1);
+				scn->AddControlPoints(3);
+				break;
+
+			case GLFW_KEY_4:
+				bezier_curve->ResetCurve();
+				bezier_curve->AddSegments(2);
+				scn->AddControlPoints(4);
+				break;
+			case GLFW_KEY_5:
+				bezier_curve->ResetCurve();
+				bezier_curve->AddSegments(3);
+				scn->AddControlPoints(5);
+				break;
+			case GLFW_KEY_6:
+				bezier_curve->ResetCurve();
+				bezier_curve->AddSegments(4);
+				scn->AddControlPoints(6);
 				break;
 			
 		default:
@@ -151,6 +189,16 @@ void Game::MyMouseCallback(GLFWwindow* window,int button, int action, int mods)
 		double x2,y2;
 		glfwGetCursorPos(window,&x2,&y2);
 		scn->Picking((int)x2,(int)y2);
+
+		if (glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && selected_control_point % 3 == 0 && selected_control_point != 0)
+		{
+			Shape* prev_control_point = control_points[selected_control_point - 1];
+			glm::vec3 new_p2 = scn->Align(selected_control_point/3);
+			prev_control_point->MyTranslate(new_p2, 1);
+
+			scn->Draw(1,0,BACK,true,false);
+			glfwSwapBuffers(window);
+		}
 	}
 }
 
@@ -173,18 +221,11 @@ void Game::MyCursorPositionCallback(GLFWwindow* window, double xpos, double ypos
 		}
 	} else {
 		Shape* control_point = control_points[selected_control_point];
-		if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+		if(glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 		{				
+			scn->ControlPointUpdate(-(scn->xrel)/40.0f, (scn->yrel)/40.0f, preserveC1);
 
-			// control_point->MyTranslate(glm::vec3(-(scn->xrel)/40.0f,0,0),0);
-			// control_point->MyTranslate(glm::vec3(0,(scn->yrel)/40.0f,0),0);
-			scn->ControlPointUpdate(-(scn->xrel)/40.0f, (scn->yrel)/40.0f, true);
-		}
-		// else if (glfwGetMouseButton(window,GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-		// {
-		// 	control_point->MyRotate(-(scn->xrel)/2.0f,glm::vec3(0,1,0),0);
-		// 	control_point->MyRotate(-(scn->yrel)/2.0f,glm::vec3(1,0,0),0);
-		// }
+		} 
 
 		scn->Draw(1,0,BACK,true,false);
 		glfwSwapBuffers(window);
@@ -203,13 +244,13 @@ void Game::Update(const glm::mat4 &MVP,const glm::mat4 &Model,const int  shaderI
 	Shader *s = shaders[shaderIndx];
 	int r = ((pickedShape+1) & 0x000000FF) >>  0;
 	int g = ((pickedShape+1) & 0x0000FF00) >>  8;
-	int b = ((pickedShape+1) & 0x00FF0000) >> 16;
+	int bezier_curve = ((pickedShape+1) & 0x00FF0000) >> 16;
 	s->Bind();
 	s->SetUniformMat4f("MVP", MVP);
 	s->SetUniformMat4f("Normal",Model);
 	s->SetUniform4f("lightDirection", 0.0f , 0.0f, -1.0f, 0.0f);
 	if(shaderIndx == 0)
-		s->SetUniform4f("lightColor",r/255.0f, g/255.0f, b/255.0f,1.0f);
+		s->SetUniform4f("lightColor",r/255.0f, g/255.0f, bezier_curve/255.0f,1.0f);
 	else 
 		s->SetUniform4f("lightColor",0.7f,0.8f,0.1f,1.0f);
 	s->Unbind();
@@ -235,6 +276,11 @@ void Game::ActivateSelection()
 	isSelected = !isSelected;
 }
 
+void Game::ChangeContinuity()
+{
+	preserveC1 = !preserveC1;
+}
+
 void Game::ControlPointUpdate(float dx, float dy, bool preserveC1)
 {
 	control_points[selected_control_point]->MyTranslate(glm::vec3(dx, dy, 0), 0);
@@ -245,11 +291,17 @@ void Game::ControlPointUpdate(float dx, float dy, bool preserveC1)
 	}
 	int segNum = selected_control_point/3;
 	int index = selected_control_point % 3;
-	if (segNum == control_points.size()/4) {
+	if (segNum == (control_points.size() - 1)/3) {
 		segNum -= 1;
 		index = 3;
 	}
-	b->MoveControlPoint(segNum, index, dx, dy, preserveC1);
+	bezier_curve->MoveControlPoint(segNum, index, dx, dy, preserveC1);
+}
+
+glm::vec3 Game::Align(int segNum)
+{
+	glm::vec4 new_p2 = bezier_curve->Align(segNum);
+	return glm::vec3(new_p2.x, new_p2.y, new_p2.z);
 }
 
 void Game::WhenRotate()
@@ -262,9 +314,9 @@ void Game::WhenTranslate()
 
 void Game::Motion()
 {
-	// Bezier1D *b = (Bezier1D*) shapes[0];
+	// Bezier1D *bezier_curve = (Bezier1D*) shapes[0];
 	Shape *cube = shapes.back();
-	int segNum = b->GetSegmentsNum();
+	int segNum = bezier_curve->GetSegmentsNum();
 	if(isActive)
 	{
 		t += t_increment;
@@ -286,13 +338,14 @@ void Game::Motion()
 			t_increment *= -1;
 		}
 
-		glm::vec4 point = b->GetPointOnCurve(seg, t);
+		glm::vec4 point = bezier_curve->GetPointOnCurve(seg, t);
 
-		cube->MyTranslate(glm::vec3(), 1);
-		cube->MyTranslate(glm::vec3(point.x, point.y, point.z), 0);
+		cube->MyTranslate(glm::vec3(point.x, point.y, point.z), 1);
 
-		glm::vec4 deriv = b->GetVelocity(seg, t);
-		cube->MyRotate(0, glm::vec3(deriv.x, deriv.y, deriv.z), 2);
+		glm::vec4 deriv = bezier_curve->GetVelocity(seg, t);
+		if (!(glm::all(glm::equal(deriv, glm::vec4(0,0,0,0))))) {
+			cube->MyRotate(0, glm::vec3(deriv.x, deriv.y, deriv.z), 2);
+		}
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	}
