@@ -84,16 +84,23 @@ IndexedModel Bezier1D::GetLine() const
         for (float t = 0; t < points_per_segment; t++) {
             glm::vec4 point = GetPointOnCurve(i, t/points_per_segment); //calculate le position of the point on the curve
             // printf("(%f, %f, %f),\n", point.x, point.y, point.z);
-            LineVertex lv(glm::vec3(point.x, point.y, point.z), glm::vec3(1,1,1));
-            axisVertices.push_back(lv);
-            model.positions.push_back(*lv.GetPos()); //add position to the model
-            model.colors.push_back(*lv.GetColor()); //add color to the model
+            LineVertex lv1(glm::vec3(point.x, point.y, point.z), glm::vec3(1,1,1));
+            axisVertices.push_back(lv1);
+            model.positions.push_back(*lv1.GetPos()); //add position to the model
+            model.colors.push_back(*lv1.GetColor()); //add color to the model
             // if (i == 0 && t == 0) {
                 model.indices.push_back(i*points_per_segment + t); //if it's the first point, add only it 
             // } else {
             //     model.indices.push_back(i*points_per_segment + t - 1); 
             //     model.indices.push_back(i*points_per_segment + t); //add the previous point and current point to indices (this makes sure all points are connected in the scene)  
             // }
+            if (( t == 0) || (t == points_per_segment - 1)) {
+                LineVertex lv2(glm::vec3(point.x, point.y, point.z), glm::vec3(1,1,1));
+                axisVertices.push_back(lv2);
+                model.positions.push_back(*lv2.GetPos()); //add position to the model
+                model.colors.push_back(*lv2.GetColor()); //add color to the model
+                model.indices.push_back(i*points_per_segment + t); //if it's the first point, add only it 
+            }
         }
     }
 

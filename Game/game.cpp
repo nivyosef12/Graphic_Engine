@@ -99,11 +99,11 @@ void Game::MyKeyCallback(GLFWwindow* window, int key, int scancode, int action, 
 				break;
 
 			case GLFW_KEY_R:
-				scn->MoveCamera(0, xTranslate, -5);
+				scn->MoveCamera(0, xTranslate, 5);
 				break;
 
 			case GLFW_KEY_L:
-				scn->MoveCamera(0, xTranslate, 5);
+				scn->MoveCamera(0, xTranslate, -5);
 				break;
 
 			case GLFW_KEY_U:
