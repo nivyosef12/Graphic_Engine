@@ -68,7 +68,6 @@ private:
 	std::vector<Camera*> cameras; 
 
 	float depth;
-	int xold, yold,xrel, yrel;
 	int cameraIndx;
 	void Clear(float r, float g, float b, float a);
 
@@ -77,6 +76,7 @@ protected:
 	std::vector<Shader*> shaders;
 	std::vector<int> chainParents;
 	std::vector<Texture*> textures;
+	int xold, yold,xrel, yrel;
 	
 	int pickedShape;
 	
