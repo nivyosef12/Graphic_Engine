@@ -7,25 +7,6 @@
 int points_per_segment = 20;
 float curve_scale = 2;
 
-/*
-Bezier1D::Bezier1D(int segNum,int res,int mode, int viewport): 
-    //printf("1\n");
-    segmentsNum(segNum),
-    resT(res),
-    M(
-        glm::mat4(
-            -1, 3, -3, 1,
-            3, -6, 3, 0,
-            -3, 3, 0, 0,
-            1, 0, 0, 0
-        )
-    ),
-    segments(BuildSegments()), //build the segments
-    Shape(new MeshConstructor(GetLine(), false), 1) //build the mesh constructor
-{ 
-    int x = 2;
-}
-*/
 // TODO: diff between segNum and res
 Bezier1D::Bezier1D(int segNum, int res, int mode, int viewport) : Shape(1)
 {
@@ -90,19 +71,7 @@ IndexedModel Bezier1D::GetLine() const
             axisVertices.push_back(lv1);
             model.positions.push_back(*lv1.GetPos()); //add position to the model
             model.colors.push_back(*lv1.GetColor()); //add color to the model
-            // if (i == 0 && t == 0) {
-                model.indices.push_back(i*points_per_segment + t); //if it's the first point, add only it 
-            // } else {
-            //     model.indices.push_back(i*points_per_segment + t - 1); 
-            //     model.indices.push_back(i*points_per_segment + t); //add the previous point and current point to indices (this makes sure all points are connected in the scene)  
-            // }
-            // if (( t == 0) || (t == points_per_segment - 1)) {
-            //     LineVertex lv2(glm::vec3(point.x, point.y, point.z), glm::vec3(1,1,1));
-            //     axisVertices.push_back(lv2);
-            //     model.positions.push_back(*lv2.GetPos()); //add position to the model
-            //     model.colors.push_back(*lv2.GetColor()); //add color to the model
-            //     model.indices.push_back(i*points_per_segment + t); //if it's the first point, add only it 
-            // }
+            model.indices.push_back(i*points_per_segment + t); //if it's the first point, add only it 
         }
     }
 
@@ -132,10 +101,6 @@ glm::vec4 Bezier1D::GetVelocity(int segment, float t)
     glm::vec4 vel = dT * M * glm::transpose(segments[segment]);
     return vel;
 }
-
-// void Bezier1D::SplitSegment(int segment, int t)
-// {
-// }
 
 void Bezier1D::AddSegments(int n)
 {
@@ -187,8 +152,6 @@ float Bezier1D::MoveControlPoint(int segment, int indx, float dx,float dy,bool p
     
 
     setMesh(new MeshConstructor(GetLine(), false));
-    // Draw(1,0,BACK,true,false);
-	// glfwSwapBuffers(window);
 
     return 0; //not suppose to reach here
 }
@@ -217,16 +180,6 @@ glm::vec4 Bezier1D::Align(int segNum)
     setMesh(new MeshConstructor(GetLine(), false));
     return new_p2;
 }
-
-// int Bezier1D::GetSegmentsNum()
-// {
-//     return segmentsNum;
-// }
-
-// int Bezier1D::GetResT()
-// {
-//     return resT;
-// }
 
 Bezier1D::~Bezier1D(void)
 {
