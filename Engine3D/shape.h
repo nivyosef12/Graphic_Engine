@@ -10,20 +10,26 @@ class Shape : public MovableGLM
 {
 private:
 
-	MeshConstructor *mesh;
 	int texID;
 	int shaderID;
 	bool isCopy;
 	unsigned int mode;
 	bool toRender;
 
+protected:
+
+	MeshConstructor *mesh;
+
 public:
+	Shape(unsigned int mode);
 
 	Shape(const Shape& shape,unsigned int mode);
 
 	Shape(const std::string& fileName,unsigned int mode);
 	
 	Shape(const int SimpleShapeType,unsigned int mode);
+
+	Shape(MeshConstructor *mesh, unsigned int mode);
 
 	void Draw( const std::vector<Shader*> shaders, const std::vector<Texture*> textures,bool isPicking);
 
@@ -42,6 +48,8 @@ public:
 	inline int GetShader(){return shaderID;}
 
 	inline int GetTexture(){return texID;}
+
+	void setMesh(MeshConstructor *new_mesh){this->mesh = new_mesh;}
 
 	virtual ~Shape(void);
 };
